@@ -1,0 +1,12 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/bionic64"
+  config.vm.synced_folder "../../jni/v8",       "/opt/build/v8", create: true
+  config.vm.synced_folder "../../src/main/cpp", "/opt/build/src", create: true
+  config.vm.synced_folder "../../target/jni",   "/opt/target", create: true
+
+  config.vm.provision "file", source: "CMakeLists.txt", destination: "/tmp/CMakeLists.txt", run: 'always'
+  config.vm.provision "shell", inline: "cp -f -v /tmp/CMakeLists.txt /opt/build/CMakeLists.txt", run: 'always'
+
+  config.vm.provision "shell", path: "setup.sh"
+  config.vm.provision "shell", path: "build.sh", run: 'always'
+end

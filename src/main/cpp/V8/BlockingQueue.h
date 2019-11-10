@@ -2,6 +2,8 @@
 #define BLOCKING_QUEUE_H_
 
 #include <queue>
+#include <mutex>
+#include <condition_variable>
 
 template <typename T> class BlockingQueue
 {

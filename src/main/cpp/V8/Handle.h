@@ -37,8 +37,7 @@ public:
         return v8::Local<V>::Cast(v8::Local<v8::Value>::New(isolate, *persistent));
     }
 
-    template<>
-    inline v8::Local<v8::Value> GetLocal<v8::Value>()
+    inline v8::Local<v8::Value> GetLocal()
     {
         return v8::Local<v8::Value>::New(isolate, *persistent);
     }

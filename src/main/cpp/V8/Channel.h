@@ -1,6 +1,7 @@
 #ifndef CHANNEL_H_
 #define CHANNEL_H_
 
+#include <functional>
 #include "v8-inspector.h"
 
 class Channel : public v8_inspector::V8Inspector::Channel

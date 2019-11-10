@@ -1,6 +1,7 @@
 #ifndef ENVIRONMENT_H_
 #define ENVIRONMENT_H_
 
+#include <cstring>
 #include <jni.h>
 #include "libplatform/libplatform.h"
 #include "v8.h"
@@ -63,7 +64,7 @@ public:
         }
 
         if (getEnvStat == JNI_EDETACHED) {
-            if (_jvm->AttachCurrentThread(env, nullptr) != 0) {
+            if (_jvm->AttachCurrentThread((void**) env, nullptr) != 0) {
                 return -1;
             }
             return 1;
