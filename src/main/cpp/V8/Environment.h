@@ -64,7 +64,11 @@ public:
         }
 
         if (getEnvStat == JNI_EDETACHED) {
+#ifdef __ANDROID__
+            if (_jvm->AttachCurrentThread(env, nullptr) != 0) {
+#else
             if (_jvm->AttachCurrentThread((void**) env, nullptr) != 0) {
+#endif
                 return -1;
             }
             return 1;
