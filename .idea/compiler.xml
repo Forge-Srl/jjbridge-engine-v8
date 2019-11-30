@@ -6,11 +6,20 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="jjbridge-v8" />
+        <module name="jjbridge-v8-macos" />
+        <module name="jjbridge-v8-android" />
+        <module name="jjbridge-v8-linux" />
+        <module name="jjbridge-v8-windows" />
+        <module name="jjbridge-v8 (1)" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="jjbridge-v8" target="1.8" />
+      <module name="jjbridge-v8 (1)" target="1.8" />
+      <module name="jjbridge-v8-android" target="1.8" />
+      <module name="jjbridge-v8-linux" target="1.8" />
+      <module name="jjbridge-v8-macos" target="1.8" />
+      <module name="jjbridge-v8-windows" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

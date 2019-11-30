@@ -2,5 +2,9 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/target/classes" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/target/jni/android" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/target/jni/linux/x86_64" charset="UTF-8" />
   </component>
 </project>
