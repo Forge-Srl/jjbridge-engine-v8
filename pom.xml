@@ -55,9 +55,9 @@
                 </os>
             </activation>
             <properties>
-                <script.toExecute>./script/build_v8_JNI.ps1</script.toExecute>
+                <script.toExecute>./build_v8_JNI.ps1</script.toExecute>
                 <script.executor>powershell.exe</script.executor>
-                <jniPath>${project.build.directory}/jni/windows/x86_64</jniPath>
+                <jniPath>${project.basedir}/windows/jni/x86_64</jniPath>
             </properties>
         </profile>
         <profile>
@@ -68,9 +68,9 @@
                 </os>
             </activation>
             <properties>
-                <script.toExecute>./script/build_v8_JNI.sh</script.toExecute>
+                <script.toExecute>./build_v8_JNI.sh</script.toExecute>
                 <script.executor>bash</script.executor>
-                <jniPath>${project.build.directory}/jni/linux/x86_64</jniPath>
+                <jniPath>${project.basedir}/linux/jni/x86_64</jniPath>
             </properties>
         </profile>
         <profile>
@@ -83,7 +83,7 @@
             <properties>
                 <script.toExecute>___TODO___</script.toExecute>
                 <script.executor>___TODO___</script.executor>
-                <jniPath>${project.build.directory}/jni/mac/x86_64</jniPath>
+                <jniPath>${project.basedir}/macos/jni/x86_64</jniPath>
             </properties>
         </profile>
         <profile>

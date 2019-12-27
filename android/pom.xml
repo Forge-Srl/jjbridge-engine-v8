@@ -12,19 +12,34 @@
 
     <artifactId>jjbridge-v8-android</artifactId>
     <name>JJBridge V8 (Android)</name>
-    <packaging>jar</packaging>
+    <packaging>aar</packaging>
 
     <build>
-        <resources>
-            <resource>
-                <directory>${project.build.directory}/../../target/jni/android</directory>
-            </resource>
-            <resource>
-                <directory>${project.build.directory}/../../target/classes</directory>
-            </resource>
-        </resources>
-
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/../../src/main/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.simpligility.maven.plugins</groupId>
+                <artifactId>android-maven-plugin</artifactId>
+                <version>4.6.0</version>
+                <extensions>true</extensions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>

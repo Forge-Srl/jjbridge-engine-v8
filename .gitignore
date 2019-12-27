@@ -75,3 +75,9 @@ fabric.properties
 
 # Error logs from Vagrant
 *.log
+
+# Custom folders
+android/jni/
+linux/jni/
+macos/jni/
+windows/jni/

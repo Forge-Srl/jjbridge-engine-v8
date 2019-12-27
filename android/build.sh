@@ -23,9 +23,9 @@ for arch in $architectures; do
       -DCMAKE_TOOLCHAIN_FILE="$ndk_path/build/cmake/android.toolchain.cmake" \
       -DCMAKE_ANDROID_NDK="$ndk_path"
     make && (
-      mkdir -p "/opt/target/android/$arch"
-      cp libV8-wrapper.so "/opt/target/android/$arch"
-      cp "/opt/build/v8/platforms/android-$arch"/* "/opt/target/android/$arch"
+      mkdir -p "/opt/target/$arch"
+      cp libV8-wrapper.so "/opt/target/$arch"
+      cp "/opt/build/v8/platforms/android-$arch"/* "/opt/target/$arch"
     )
   )
 done

@@ -17,14 +17,29 @@
     <build>
         <resources>
             <resource>
-                <directory>${project.build.directory}/../../target/jni/macos/x86_64</directory>
-            </resource>
-            <resource>
-                <directory>${project.build.directory}/../../target/classes</directory>
+                <directory>${project.build.directory}/../jni/x86_64</directory>
             </resource>
         </resources>
 
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/../../src/main/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>

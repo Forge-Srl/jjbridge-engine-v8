@@ -9,7 +9,7 @@ echo "### Building..."
 export CXX="clang"
 cmake ..
 make && (
-  mkdir -p /opt/target/linux/x86_64
-  cp libV8-wrapper.so /opt/target/linux/x86_64
-  cp /opt/build/v8/platforms/linux-x86_64/* /opt/target/linux/x86_64
+  mkdir -p /opt/target/x86_64
+  cp libV8-wrapper.so /opt/target/x86_64
+  cp /opt/build/v8/platforms/linux-x86_64/* /opt/target/x86_64
 )

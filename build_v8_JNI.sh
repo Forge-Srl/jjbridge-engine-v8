@@ -17,19 +17,17 @@ INFO "==========[ Native Build Start ]=========="
 INFO "Native build script running from $project_dir"
 INFO
 
-cd script || exit $MISSING_FOLDER
+for os_name in $operating_systems; do
+  if [ -z "$(ls -A "$project_dir/$os_name/jni")" ]; then
+    INFO "Build not found for $os_name -> Starting build process"
 
-for build_path in $operating_systems; do
-  if [ -z "$(ls -A "$project_dir/target/jni/$build_path")" ]; then
-    INFO "Build not found for $build_path -> Starting build process"
+    cd "$os_name" || exit $MISSING_FOLDER
 
-    cd "$build_path" || exit $MISSING_FOLDER
-
-    export VAGRANT_DOTFILE_PATH="$project_dir/target/vagrant/$build_path"
+    export VAGRANT_DOTFILE_PATH="$project_dir/$os_name/target/vagrant"
     vagrant up #--provision
     if [ $? -ne 0 ]; then
         vagrant halt
-        ERROR "An error occurred while building for $build_path. Please check the full log for more info."
+        ERROR "An error occurred while building for $os_name. Please check the full log for more info."
         ERROR "For vagrant folder see $VAGRANT_DOTFILE_PATH"
         exit $VAGRANT_ERROR
     else
@@ -38,7 +36,7 @@ for build_path in $operating_systems; do
 
     cd ..
   else
-    INFO "Build found for $build_path -> Skipping!"
+    INFO "Build found for $os_name -> Skipping!"
   fi
 done
 INFO "==========[ Native Build End ]=========="

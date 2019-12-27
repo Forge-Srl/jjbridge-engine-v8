@@ -10,7 +10,6 @@
         <module name="jjbridge-v8-android" />
         <module name="jjbridge-v8-linux" />
         <module name="jjbridge-v8-windows" />
-        <module name="jjbridge-v8 (1)" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
