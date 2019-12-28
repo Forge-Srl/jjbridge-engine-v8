@@ -14,6 +14,15 @@
     <name>JJBridge V8 (Android)</name>
     <packaging>aar</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>jjbridge</groupId>
+            <artifactId>jjbridge-v8-core</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -22,26 +31,8 @@
                 <version>4.6.0</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <nativeLibrariesDirectory>${project.build.directory}/../jni/</nativeLibrariesDirectory>
+                    <nativeLibrariesDirectory>${project.basedir}/jni/</nativeLibrariesDirectory>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${project.build.directory}/../../src/main/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

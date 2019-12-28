@@ -14,32 +14,23 @@
     <name>JJBridge V8 (Windows)</name>
     <packaging>jar</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>jjbridge</groupId>
+            <artifactId>jjbridge-v8-core</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <resources>
             <resource>
-                <directory>${project.build.directory}/../jni/x86_64</directory>
+                <directory>${project.basedir}/jni/x86_64</directory>
             </resource>
         </resources>
 
         <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${project.build.directory}/../../src/main/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>

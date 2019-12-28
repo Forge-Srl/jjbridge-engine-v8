@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.synced_folder "../jni/v8",       "/opt/build/v8", create: true
-  config.vm.synced_folder "../src/main/cpp", "/opt/build/src", create: true
+  config.vm.synced_folder "../core/src/main/cpp", "/opt/build/src", create: true
   config.vm.synced_folder "./jni",           "/opt/target", create: true
 
   config.vm.provision "shell", path: "setup.sh"
