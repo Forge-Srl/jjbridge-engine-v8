@@ -28,9 +28,9 @@
                 </os>
             </activation>
             <properties>
-                <script.toExecute>./build_v8_JNI.ps1</script.toExecute>
+                <script.toExecute>${project.basedir}/build_v8_JNI.ps1</script.toExecute>
                 <script.executor>powershell.exe</script.executor>
-                <jniPath>${project.basedir}/windows/jni/x86_64</jniPath>
+                <jniRelativePath>windows/jni/x86_64</jniRelativePath>
             </properties>
         </profile>
         <profile>
@@ -41,9 +41,9 @@
                 </os>
             </activation>
             <properties>
-                <script.toExecute>./build_v8_JNI.sh</script.toExecute>
+                <script.toExecute>${project.basedir}/build_v8_JNI.sh</script.toExecute>
                 <script.executor>bash</script.executor>
-                <jniPath>${project.basedir}/linux/jni/x86_64</jniPath>
+                <jniRelativePath>linux/jni/x86_64</jniRelativePath>
             </properties>
         </profile>
         <profile>
@@ -56,7 +56,7 @@
             <properties>
                 <script.toExecute>___TODO___</script.toExecute>
                 <script.executor>___TODO___</script.executor>
-                <jniPath>${project.basedir}/macos/jni/x86_64</jniPath>
+                <jniRelativePath>macos/jni/x86_64</jniRelativePath>
             </properties>
         </profile>
         <profile>
@@ -92,6 +92,17 @@
             </build>
         </profile>
     </profiles>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>jjbridge</groupId>
+                <artifactId>jjbridge-v8-core</artifactId>
+                <version>${project.version}</version>
+                <scope>compile</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <modules>
         <module>core</module>
