@@ -9,7 +9,7 @@ public class V8 {
     }
 
     private static V8 instance;
-    private V8() {}
+    protected V8() {} //not private because mockito sucks
     static V8 getInstance() {
         return instance != null ? instance : (instance = new V8());
     }

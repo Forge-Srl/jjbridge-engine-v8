@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-unused-function -Wno-unused-variable -Wno-unused-result -O3 -fvisibility=hidden -fexceptions -ffunction-sections -fno-data-sections")
+set(CMAKE_SHARED_LINKER_FLAGS "--verbose")
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_ANDROID_STL_TYPE c++_shared)
 set(ANDROID_ALLOW_UNDEFINED_SYMBOLS FALSE)
@@ -8,6 +9,10 @@ set(ANDROID_ALLOW_UNDEFINED_SYMBOLS FALSE)
 set(SRC_DIR "/opt/build/src")
 set(V8_DIR "/opt/build/v8")
 set(V8_BINARIES "${V8_DIR}/platforms/android-${ANDROID_ABI}")
+
+if((ANDROID_ABI EQUAL x86_64) OR (ANDROID_ABI EQUAL arm64-v8a))
+    add_definitions(-DV8_COMPRESS_POINTERS)
+endif()
 
 include_directories("${V8_DIR}/headers/include")
 
@@ -23,6 +28,9 @@ set_target_properties(v8-base PROPERTIES
 add_library(v8-platform SHARED IMPORTED)
 set_target_properties(v8-platform PROPERTIES
                       IMPORTED_LOCATION ${V8_BINARIES}/libv8_libplatform.cr.so)
+add_library(zlib SHARED IMPORTED)
+set_target_properties(zlib PROPERTIES
+                      IMPORTED_LOCATION ${V8_BINARIES}/libchrome_zlib.cr.so)
 
 add_library(V8-wrapper SHARED
             "${SRC_DIR}/V8/Environment.cpp"
@@ -31,4 +39,4 @@ add_library(V8-wrapper SHARED
             "${SRC_DIR}/V8-wrapper.cpp")
 
 target_link_libraries(V8-wrapper
-                      v8 v8-base v8-platform cpp-shared)
+                      v8 v8-base v8-platform cpp-shared zlib)

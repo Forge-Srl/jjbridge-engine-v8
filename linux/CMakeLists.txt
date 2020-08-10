@@ -11,12 +11,14 @@ set(SRC_DIR "/opt/build/src")
 set(V8_DIR "/opt/build/v8")
 set(V8_BINARIES "${V8_DIR}/platforms/linux-x86_64")
 
+add_definitions(-DV8_COMPRESS_POINTERS)
+
 include_directories("${V8_DIR}/headers/include"
                     "${JNI_INCLUDE_DIRS}")
 
-add_library(cpp-shared SHARED IMPORTED)
-set_target_properties(cpp-shared PROPERTIES
-                      IMPORTED_LOCATION ${V8_BINARIES}/libc++.so)
+add_library(zlib SHARED IMPORTED)
+set_target_properties(zlib PROPERTIES
+                      IMPORTED_LOCATION ${V8_BINARIES}/libchrome_zlib.so)
 add_library(v8 SHARED IMPORTED)
 set_target_properties(v8 PROPERTIES
                       IMPORTED_LOCATION ${V8_BINARIES}/libv8.so)
@@ -34,4 +36,4 @@ add_library(V8-wrapper MODULE
             "${SRC_DIR}/V8-wrapper.cpp")
 
 target_link_libraries(V8-wrapper
-                      v8 v8-base v8-platform cpp-shared)
+                      v8 v8-base v8-platform zlib)

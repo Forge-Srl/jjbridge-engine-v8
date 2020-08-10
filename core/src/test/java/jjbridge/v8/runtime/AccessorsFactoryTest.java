@@ -131,7 +131,7 @@ public class AccessorsFactoryTest {
         Date value = simpleDateFormat.parse("6403-04-14T05:58:33.197Z");
         ValueSetter<Date> setter = factory.dateSetter(referenceHandle);
         setter.setValue(value);
-        verify(v8).setDateTime(runtimeHandle, referenceHandle, "6403-04-14T06:58:33.197+01:00");
+        verify(v8).setDateTime(runtimeHandle, referenceHandle, "6403-04-14T07:58:33.197+02:00");
     }
 
     @Test

@@ -9,6 +9,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.URI;
@@ -116,6 +117,7 @@ public class InspectorInstrumentedTest {
     }
 
     @Test
+    @Ignore("to be fixed")
     public final void interactionWithInspector() throws InterruptedException {
         inspectorClient.sendAndExpect(
                 "{\"id\":1,\"method\":\"Profiler.enable\"}",

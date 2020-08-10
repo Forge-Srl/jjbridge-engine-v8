@@ -16,7 +16,7 @@ char* getMessage(v8::Local<v8::Context> context, v8::TryCatch* tryCatch)
     if (stack.IsEmpty()) { message = tryCatch->Message()->Get(); }
     else { message = v8::Local<v8::String>::Cast(stack.ToLocalChecked()); }
 
-    v8::String::Utf8Value unicodeString(message);
+    v8::String::Utf8Value unicodeString(context->GetIsolate(), message);
     return *unicodeString;
 }
 
@@ -43,7 +43,7 @@ v8::Local<v8::String> Runtime::createV8String(JNIEnv* env, jstring &string) cons
 {
 	const uint16_t* unicodeString = env->GetStringChars(string, nullptr);
 	int length = env->GetStringLength(string);
-	v8::Local<v8::String> result = v8::String::NewFromTwoByte(isolate, unicodeString, v8::String::NewStringType::kNormalString, length);
+	v8::Local<v8::String> result = v8::String::NewFromTwoByte(isolate, unicodeString, v8::NewStringType::kNormal, length).ToLocalChecked();
 	env->ReleaseStringChars(string, unicodeString);
 	return result;
 }
@@ -57,7 +57,7 @@ bool Runtime::compileScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Loc
     v8::Local<v8::Boolean> cors = v8::Boolean::New(isolate, true);
     static int ScriptIdCounter = 0;
     v8::Local<v8::Integer> scriptId = v8::Integer::New(isolate, ScriptIdCounter++);
-    v8::Local<v8::String> originUrl = v8::String::Concat(v8::String::NewFromUtf8(isolate, "file://"), fileName);
+    v8::Local<v8::String> originUrl = v8::String::Concat(isolate, v8::String::NewFromUtf8(isolate, "file://").ToLocalChecked(), fileName);
 
 	v8::ScriptOrigin* origin = new v8::ScriptOrigin(fileName, originRow, originCol, cors, scriptId, originUrl);
 	v8::MaybeLocal<v8::Script> maybeScript = v8::Script::Compile(context, source, origin);
@@ -111,10 +111,10 @@ void Runtime::throwJNIExceptionInJS(JNIEnv* env, jthrowable throwable)
     ss << "java exception in callback [" << msg << "].";
     env->ReleaseStringUTFChars(message, nativeMessage);
 
-    v8::Local<v8::Value> exception = v8::Exception::Error(v8::String::NewFromUtf8(isolate, ss.str().c_str()));
+    v8::Local<v8::Value> exception = v8::Exception::Error(v8::String::NewFromUtf8(isolate, ss.str().c_str()).ToLocalChecked());
     v8::Local<v8::Object>::Cast(exception)
         ->Set(v8::Local<v8::Context>::New(isolate, context),
-            v8::String::NewFromUtf8(isolate, nativeExceptionField),
+            v8::String::NewFromUtf8(isolate, nativeExceptionField).ToLocalChecked(),
             v8::External::New(isolate, throwable));
 	isolate->ThrowException(exception);
 }
@@ -123,7 +123,7 @@ void Runtime::throwExecutionException(JNIEnv* env, v8::Local<v8::Context> contex
 {
     char* message = getMessage(context, tryCatch);
     v8::MaybeLocal<v8::Value> inner = v8::Local<v8::Object>::Cast(tryCatch->Exception())
-        ->Get(context, v8::String::NewFromUtf8(isolate, nativeExceptionField));
+        ->Get(context, v8::String::NewFromUtf8(isolate, nativeExceptionField).ToLocalChecked());
 
     if (inner.IsEmpty())
     {

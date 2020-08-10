@@ -11,7 +11,7 @@ private:
 
 public:
 	MyPlatform()
-	: platform(v8::platform::NewDefaultPlatform())
+	: platform(std::move(v8::platform::NewDefaultPlatform()))
 	{}
 
 	virtual void OnCriticalMemoryPressure() override { platform->OnCriticalMemoryPressure(); }
@@ -19,8 +19,6 @@ public:
 	virtual int NumberOfWorkerThreads() override { return platform->NumberOfWorkerThreads(); }
 	virtual std::shared_ptr<v8::TaskRunner> GetForegroundTaskRunner(v8::Isolate* isolate) override { return platform->GetForegroundTaskRunner(isolate); }
 	virtual void CallOnWorkerThread(std::unique_ptr<v8::Task> task) override { platform->CallOnWorkerThread(std::move(task)); }
-    virtual void CallOnForegroundThread(v8::Isolate *isolate, v8::Task *task) override { platform->CallOnForegroundThread(isolate, task); }
-	virtual void CallDelayedOnForegroundThread(v8::Isolate* isolate, v8::Task* task, double delay_in_seconds) override { platform->CallDelayedOnForegroundThread(isolate, task, delay_in_seconds); }
 
     // override because default platform is UNIMPLEMENTED when delay_in_seconds != 0
 	virtual void CallDelayedOnWorkerThread(std::unique_ptr<v8::Task> task, double delay_in_seconds) override
@@ -29,7 +27,6 @@ public:
 	    platform->CallDelayedOnWorkerThread(std::move(task), delay_in_seconds);
 	}
 
-	virtual void CallIdleOnForegroundThread(v8::Isolate* isolate, v8::IdleTask* task) override { platform->CallIdleOnForegroundThread(isolate, task); }
 	virtual bool IdleTasksEnabled(v8::Isolate* isolate) override { return platform->IdleTasksEnabled(isolate); }
 	virtual double MonotonicallyIncreasingTime() override { return platform->MonotonicallyIncreasingTime(); }
 	virtual double CurrentClockTimeMillis() override { return platform->CurrentClockTimeMillis(); }
