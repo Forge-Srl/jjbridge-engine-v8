@@ -677,6 +677,7 @@ public class RuntimeInstrumentedTest {
             java.lang.String[] actualValue = new java.lang.String[2];
             java.lang.String expectedResult1 = "some value";
 
+            // 1. Create some references in a specific thread (even different from the test one)
             Thread t = new Thread(() -> {
                 result[0] = runtime.newReference(JSType.String);
                 ((JSString)runtime.resolveReference(result[0])).setValue(expectedResult1);
@@ -686,7 +687,9 @@ public class RuntimeInstrumentedTest {
             t.start();
             t.join();
 
-            for (int i = 0; i < 100; i++) {
+
+            // 2. Perform multiple read and write accesses to the same references from may different threads
+            for (int i = 0; i < 10; i++) {
                 int randomValue = (int) (Math.random() * 10000);
                 actualValue[0] = null;
                 actualValue[1] = null;
