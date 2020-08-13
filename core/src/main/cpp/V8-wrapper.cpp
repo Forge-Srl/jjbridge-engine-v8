@@ -303,8 +303,8 @@ extern "C"
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
-		v8::String::Utf8Value unicodeString(runtime->isolate, (Handle::FromLong(referenceHandle)->GetLocal<v8::Value>()->ToString(context)).ToLocalChecked());
-		return env->NewStringUTF(*unicodeString);
+		v8::String::Value unicodeString(runtime->isolate, (Handle::FromLong(referenceHandle)->GetLocal<v8::Value>()->ToString(context)).ToLocalChecked());
+		return env->NewString(*unicodeString, unicodeString.length());
 	}
 
 	JNIEXPORT void JNICALL
@@ -320,7 +320,7 @@ extern "C"
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
-		Handle::FromLong(referenceHandle)->Set(v8::String::NewFromUtf8(runtime->isolate, "").ToLocalChecked());
+		Handle::FromLong(referenceHandle)->Set(v8::String::Empty(runtime->isolate));
 	}
 
 	JNIEXPORT jobject JNICALL
@@ -410,7 +410,7 @@ extern "C"
 		newLocalContext(runtime, context)
 		v8::Local<v8::Object> object = Handle::FromLong(referenceHandle)->GetLocal<v8::Object>();
 
-		v8::Function* function = v8::Function::Cast(*(object->Get(context, v8::String::NewFromUtf8(runtime->isolate, "toISOString").ToLocalChecked()).ToLocalChecked()));
+		v8::Function* function = v8::Function::Cast(*(object->Get(context, v8::String::NewFromUtf8Literal(runtime->isolate, "toISOString")).ToLocalChecked()));
 		v8::Local<v8::Value> dateTime = (function->Call(context, object, 0, nullptr)).ToLocalChecked();
 		v8::String::Utf8Value unicodeString(runtime->isolate, (dateTime->ToString(context)).ToLocalChecked());
 		return env->NewStringUTF(*unicodeString);
@@ -423,7 +423,7 @@ extern "C"
 		newLocalContext(runtime, context)
 		v8::Local<v8::Object> global = context->Global();
 
-		v8::Function* dateConstructor = v8::Function::Cast(*(global->Get(context, v8::String::NewFromUtf8(runtime->isolate, "Date").ToLocalChecked())).ToLocalChecked());
+		v8::Function* dateConstructor = v8::Function::Cast(*(global->Get(context, v8::String::NewFromUtf8Literal(runtime->isolate, "Date"))).ToLocalChecked());
 		const int argc = 1;
 		v8::Local<v8::Value> argv[argc] = { runtime->createV8String(env, dateTime) };
 		v8::Local<v8::Date> dateObj = v8::Local<v8::Date>::Cast((dateConstructor->NewInstance(context, argc, argv)).ToLocalChecked());

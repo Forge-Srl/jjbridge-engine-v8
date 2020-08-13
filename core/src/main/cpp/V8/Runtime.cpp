@@ -7,9 +7,7 @@
 #include "Environment.h"
 #include "Handle.h"
 
-const char* nativeExceptionField = "_nativeException";
-
-char* getMessage(v8::Local<v8::Context> context, v8::TryCatch* tryCatch)
+std::string getMessage(v8::Local<v8::Context> context, v8::TryCatch* tryCatch)
 {
     v8::MaybeLocal<v8::Value> stack = tryCatch->StackTrace(context);
     v8::Local<v8::String> message;
@@ -17,7 +15,8 @@ char* getMessage(v8::Local<v8::Context> context, v8::TryCatch* tryCatch)
     else { message = v8::Local<v8::String>::Cast(stack.ToLocalChecked()); }
 
     v8::String::Utf8Value unicodeString(context->GetIsolate(), message);
-    return *unicodeString;
+    std::string str(*unicodeString);
+    return str;
 }
 
 Runtime::Runtime(JNIEnv* env, jobject referenceMonitor, jobject functionCache, jobject typeGetterCache, jobject equalityCheckerCache, jobject externalCache)
@@ -48,6 +47,7 @@ v8::Local<v8::String> Runtime::createV8String(JNIEnv* env, jstring &string) cons
 	return result;
 }
 
+#include <stdexcept>
 bool Runtime::compileScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v8::String> fileName, v8::Local<v8::String> source, v8::Local<v8::Script> &script)
 {
 	v8::TryCatch tryCatch(isolate);
@@ -57,14 +57,15 @@ bool Runtime::compileScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Loc
     v8::Local<v8::Boolean> cors = v8::Boolean::New(isolate, true);
     static int ScriptIdCounter = 0;
     v8::Local<v8::Integer> scriptId = v8::Integer::New(isolate, ScriptIdCounter++);
-    v8::Local<v8::String> originUrl = v8::String::Concat(isolate, v8::String::NewFromUtf8(isolate, "file://").ToLocalChecked(), fileName);
+    v8::Local<v8::String> originUrl = v8::String::Concat(isolate, v8::String::NewFromUtf8Literal(isolate, "file://"), fileName);
 
 	v8::ScriptOrigin* origin = new v8::ScriptOrigin(fileName, originRow, originCol, cors, scriptId, originUrl);
 	v8::MaybeLocal<v8::Script> maybeScript = v8::Script::Compile(context, source, origin);
 
     if (tryCatch.HasCaught())
 	{
-	    environment->throwCompilationException(env, getMessage(context, &tryCatch));
+	    std::string tmp = getMessage(context, &tryCatch);
+	    environment->throwCompilationException(env, tmp.c_str());
     	return false;
 	}
 
@@ -114,25 +115,25 @@ void Runtime::throwJNIExceptionInJS(JNIEnv* env, jthrowable throwable)
     v8::Local<v8::Value> exception = v8::Exception::Error(v8::String::NewFromUtf8(isolate, ss.str().c_str()).ToLocalChecked());
     v8::Local<v8::Object>::Cast(exception)
         ->Set(v8::Local<v8::Context>::New(isolate, context),
-            v8::String::NewFromUtf8(isolate, nativeExceptionField).ToLocalChecked(),
+            v8::String::NewFromUtf8Literal(isolate, "_nativeException"),
             v8::External::New(isolate, throwable));
 	isolate->ThrowException(exception);
 }
 
 void Runtime::throwExecutionException(JNIEnv* env, v8::Local<v8::Context> context, v8::TryCatch* tryCatch)
 {
-    char* message = getMessage(context, tryCatch);
+    std::string message = getMessage(context, tryCatch);
     v8::MaybeLocal<v8::Value> inner = v8::Local<v8::Object>::Cast(tryCatch->Exception())
-        ->Get(context, v8::String::NewFromUtf8(isolate, nativeExceptionField).ToLocalChecked());
+        ->Get(context, v8::String::NewFromUtf8Literal(isolate, "_nativeException"));
 
     if (inner.IsEmpty())
     {
-        environment->throwExecutionException(env, message);
+        environment->throwExecutionException(env, message.c_str());
     }
     else
     {
         jthrowable exception = (jthrowable) v8::Local<v8::External>::Cast(inner.ToLocalChecked())->Value();
-        environment->throwExecutionException(env, message, exception);
+        environment->throwExecutionException(env, message.c_str(), exception);
     }
 }
 
