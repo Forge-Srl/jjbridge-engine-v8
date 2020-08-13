@@ -54,8 +54,8 @@
                 </os>
             </activation>
             <properties>
-                <script.toExecute>___TODO___</script.toExecute>
-                <script.executor>___TODO___</script.executor>
+                <script.toExecute>${project.basedir}/build_v8_JNI.sh</script.toExecute>
+                <script.executor>zsh</script.executor>
                 <jniRelativePath>macos/jni/x86_64</jniRelativePath>
             </properties>
         </profile>
@@ -73,7 +73,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
+                        <version>3.0.0</version>
                         <executions>
                             <execution>
                                 <id>default-cli</id>

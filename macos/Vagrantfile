@@ -1,5 +1,6 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/bionic64"
+  config.vm.box = "ashiq/osx-10.14"
+  config.vm.box_version = "0.1"
 
   config.vm.provider "virtualbox" do |vb|
     vb.customize [

@@ -1,4 +1,8 @@
-#!/bin/bash
+# Hack for string expansion to array in Zsh like Bash
+if type emulate >/dev/null 2>/dev/null; then
+  emulate ksh;
+fi
+
 # --- Definitions ---
 # Error codes
 MISSING_FOLDER=1
