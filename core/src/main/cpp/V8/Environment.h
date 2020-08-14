@@ -136,9 +136,9 @@ public:
         env->Throw((jthrowable) env->NewObject(executionExceptionClass, executionExceptionCtor, env->NewStringUTF(message), exception));
 	}
 
-    inline void sendToInspector(JNIEnv* env, jobject object, const char* message) const
+    inline void sendToInspector(JNIEnv* env, jobject object, const jchar* message, jsize length) const
 	{
-		env->CallVoidMethod(object, messageHandlerSendToInspector, env->NewStringUTF(message));
+		env->CallVoidMethod(object, messageHandlerSendToInspector, env->NewString(message, length));
 	}
 };
 

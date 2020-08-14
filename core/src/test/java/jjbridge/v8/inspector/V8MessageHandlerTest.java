@@ -33,15 +33,6 @@ public class V8MessageHandlerTest {
     }
 
     @Test
-    public final void sendToRuntime_noParamsInJSON() {
-        String message = "{\"id\":150}";
-        String expectedMessage = "{\"id\":150,\"params\":{}}";
-
-        messageHandler.sendToRuntime(message);
-        verify(v8).onInspectorMessage(0, expectedMessage);
-    }
-
-    @Test
     public final void close() {
         messageHandler.close();
         verify(v8).closeInspector(0);

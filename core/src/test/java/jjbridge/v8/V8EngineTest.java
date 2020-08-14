@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class V8EngineInstrumentedTest {
+public class V8EngineTest {
     private V8Engine engine;
 
     @Before

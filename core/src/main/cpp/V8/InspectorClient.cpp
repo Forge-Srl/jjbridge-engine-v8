@@ -51,11 +51,11 @@ void InspectorClient::send(const v8_inspector::StringView& string)
 
     if (maybeString.IsEmpty()) return;
 
-    v8::String::Utf8Value message(runtime->isolate, maybeString.ToLocalChecked());
+    v8::String::Value message(runtime->isolate, maybeString.ToLocalChecked());
 
     JNIEnv* env;
     int result = Runtime::environment->getCurrentThreadEnv(&env, JNI_VERSION);
-    Runtime::environment->sendToInspector(env, messageHandler, *message);
+    Runtime::environment->sendToInspector(env, messageHandler, *message, message.length());
     if (result == 1) Runtime::environment->releaseCurrentThreadEnv();
 }
 
@@ -75,7 +75,8 @@ void InspectorClient::onMessageReceive(JNIEnv* env, jstring message)
 {
     const uint16_t* unicodeString = env->GetStringChars(message, nullptr);
     int length = env->GetStringLength(message);
-    v8_inspector::StringView content(unicodeString, length);
+    std::u16string temp((char16_t*) unicodeString, length);
+    v8_inspector::StringView content((uint16_t*) temp.c_str(), temp.length());
     env->ReleaseStringChars(message, unicodeString);
 
     if (terminated)

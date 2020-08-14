@@ -14,7 +14,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class V8InstrumentedTest {
+public class V8Test {
     private V8 v8;
     private long runtimeHandle;
     private ReferenceMonitor<Reference> referenceMonitor;

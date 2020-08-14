@@ -117,7 +117,6 @@ public class InspectorInstrumentedTest {
     }
 
     @Test
-    @Ignore("to be fixed")
     public final void interactionWithInspector() throws InterruptedException {
         inspectorClient.sendAndExpect(
                 "{\"id\":1,\"method\":\"Profiler.enable\"}",
@@ -130,7 +129,7 @@ public class InspectorInstrumentedTest {
 
         inspectorClient.sendAndExpect(
                 "{\"id\":3,\"method\":\"Debugger.enable\"}",
-                response -> assertTrue(response.contains("{\"id\":3,\"result\":{\"debuggerId\":\"(")));
+                response -> assertTrue(response.contains("{\"id\":3,\"result\":{\"debuggerId\":\"")));
 
         inspectorClient.sendAndExpect(
                 "{\"id\":4,\"method\":\"Debugger.setPauseOnExceptions\",\"params\":{\"state\":\"none\"}}",
@@ -151,31 +150,32 @@ public class InspectorInstrumentedTest {
                     assertEquals("{\"id\":7,\"result\":{}}", response);
                     waitBeforeScript.countDown();
                 },
-                response -> assertEquals("{\"method\":\"Debugger.scriptParsed\",\"params\":{\"scriptId\":\"10\",\"url\":\"/script_0\",\"startLine\":0,\"startColumn\":0,\"endLine\":0,\"endColumn\":66,\"executionContextId\":1,\"hash\":\"2f160716878340dd7c1e0066bcd32d7a37d6431e\",\"isLiveEdit\":false,\"sourceMapURL\":\"file:///script_0\",\"hasSourceURL\":false,\"isModule\":false,\"length\":66}}", response));
+                response -> assertEquals("{\"method\":\"Debugger.scriptParsed\",\"params\":{\"scriptId\":\"3\",\"url\":\"/script_0\",\"startLine\":0,\"startColumn\":0,\"endLine\":0,\"endColumn\":66,\"executionContextId\":1,\"hash\":\"2f160716878340dd7c1e0066bcd32d7a37d6431e\",\"isLiveEdit\":false,\"sourceMapURL\":\"file:///script_0\",\"hasSourceURL\":false,\"isModule\":false,\"length\":66,\"scriptLanguage\":\"JavaScript\"}}", response));
 
+        /// qui si blocca...
         waitBeforeScript.await();
         String scriptSource = "class AAA { str() { console.log('AAA'); return 1000 } }; new AAA()";
         JSReference script1 = runtime.executeScript(scriptSource);
         JSObject aaa = runtime.resolveReference(script1);
 
         inspectorClient.sendAndExpect(
-                "{\"id\":8,\"method\":\"Debugger.getScriptSource\",\"params\":{\"scriptId\":\"10\"}}",
+                "{\"id\":8,\"method\":\"Debugger.getScriptSource\",\"params\":{\"scriptId\":\"3\"}}",
                 response -> assertEquals("{\"id\":8,\"result\":{\"scriptSource\":\"class AAA { str() { console.log('AAA'); return 1000 } }; new AAA()\"}}", response));
 
         inspectorClient.sendAndExpect(
-                "{\"id\":9,\"method\":\"Debugger.getPossibleBreakpoints\",\"params\":{\"start\":{\"scriptId\":\"10\",\"lineNumber\":0,\"columnNumber\":20},\"end\":{\"scriptId\":\"10\",\"lineNumber\":0,\"columnNumber\":39},\"restrictToFunction\":false}}",
-                response -> assertEquals("{\"id\":9,\"result\":{\"locations\":[{\"scriptId\":\"10\",\"lineNumber\":0,\"columnNumber\":20},{\"scriptId\":\"10\",\"lineNumber\":0,\"columnNumber\":28,\"type\":\"call\"}]}}", response));
+                "{\"id\":9,\"method\":\"Debugger.getPossibleBreakpoints\",\"params\":{\"start\":{\"scriptId\":\"3\",\"lineNumber\":0,\"columnNumber\":20},\"end\":{\"scriptId\":\"3\",\"lineNumber\":0,\"columnNumber\":39},\"restrictToFunction\":false}}",
+                response -> assertEquals("{\"id\":9,\"result\":{\"locations\":[{\"scriptId\":\"3\",\"lineNumber\":0,\"columnNumber\":20},{\"scriptId\":\"3\",\"lineNumber\":0,\"columnNumber\":28,\"type\":\"call\"}]}}", response));
 
         inspectorClient.sendAndExpect(
                 "{\"id\":10,\"method\":\"Debugger.setBreakpointsActive\",\"params\":{\"active\":true}}",
                 response -> assertEquals("{\"id\":10,\"result\":{}}", response));
 
         inspectorClient.sendAndExpect(
-                "{\"id\":11,\"method\":\"Debugger.getPossibleBreakpoints\",\"params\":{\"start\":{\"scriptId\":\"10\",\"lineNumber\":0,\"columnNumber\":20},\"end\":{\"scriptId\":\"10\",\"lineNumber\":0,\"columnNumber\":40},\"restrictToFunction\":false}}",
-                response -> assertEquals("{\"id\":11,\"result\":{\"locations\":[{\"scriptId\":\"10\",\"lineNumber\":0,\"columnNumber\":20},{\"scriptId\":\"10\",\"lineNumber\":0,\"columnNumber\":28,\"type\":\"call\"}]}}", response));
+                "{\"id\":11,\"method\":\"Debugger.getPossibleBreakpoints\",\"params\":{\"start\":{\"scriptId\":\"3\",\"lineNumber\":0,\"columnNumber\":20},\"end\":{\"scriptId\":\"3\",\"lineNumber\":0,\"columnNumber\":40},\"restrictToFunction\":false}}",
+                response -> assertEquals("{\"id\":11,\"result\":{\"locations\":[{\"scriptId\":\"3\",\"lineNumber\":0,\"columnNumber\":20},{\"scriptId\":\"3\",\"lineNumber\":0,\"columnNumber\":28,\"type\":\"call\"}]}}", response));
 
         inspectorClient.sendAndExpect(
                 "{\"id\":12,\"method\":\"Debugger.setBreakpointByUrl\",\"params\":{\"lineNumber\":0,\"urlRegex\":\"/script_0|file:///script_0\",\"columnNumber\":20,\"condition\":\"\"}}",
-                response -> assertEquals("{\"id\":12,\"result\":{\"breakpointId\":\"2:0:20:/script_0|file:///script_0\",\"locations\":[{\"scriptId\":\"10\",\"lineNumber\":0,\"columnNumber\":20}]}}", response));
+                response -> assertEquals("{\"id\":12,\"result\":{\"breakpointId\":\"2:0:20:/script_0|file:///script_0\",\"locations\":[{\"scriptId\":\"3\",\"lineNumber\":0,\"columnNumber\":20}]}}", response));
     }
 }

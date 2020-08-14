@@ -21,8 +21,8 @@ private:
     std::unique_ptr<v8_inspector::V8Inspector::Channel> channel;
 
     BlockingQueue<v8_inspector::StringView>* messageQueue;
-    bool terminated;
-    bool runningNestedLoop;
+    bool terminated = true;
+    bool runningNestedLoop = false;
 
     void runMessageLoopOnPause(int contextGroupId) override;
     void quitMessageLoopOnPause() override;

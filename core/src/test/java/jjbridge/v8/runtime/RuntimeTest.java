@@ -20,7 +20,7 @@ import java.util.HashMap;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.spy;
 
-public class RuntimeInstrumentedTest {
+public class RuntimeTest {
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     private V8Engine engine;
     

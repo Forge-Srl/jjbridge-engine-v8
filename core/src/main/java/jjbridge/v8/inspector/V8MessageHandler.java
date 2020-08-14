@@ -1,7 +1,5 @@
 package jjbridge.v8.inspector;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import jjbridge.common.inspector.Connection;
 import jjbridge.common.inspector.MessageHandler;
 import jjbridge.v8.V8;
@@ -22,13 +20,6 @@ class V8MessageHandler extends MessageHandler {
 
     @Override
     public void sendToRuntime(String s) {
-        //workaround for messages that result in {"error":{"code":-32700,"message":"Message must be a valid JSON"}}
-        JsonObject obj = new JsonParser().parse(s).getAsJsonObject();
-        if (!obj.has("params")) {
-            obj.add("params", new JsonObject());
-            s = obj.toString();
-        }
-
         this.v8.onInspectorMessage(inspectorHandle, s);
     }
 
