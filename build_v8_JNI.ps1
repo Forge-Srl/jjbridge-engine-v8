@@ -1,1 +1,0 @@
-echo "run on windows"

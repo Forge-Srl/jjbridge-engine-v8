@@ -28,7 +28,7 @@
                 </os>
             </activation>
             <properties>
-                <script.toExecute>${project.basedir}/build_v8_JNI.ps1</script.toExecute>
+                <script.toExecute>${project.basedir}/build.ps1</script.toExecute>
                 <script.executor>powershell.exe</script.executor>
                 <jniRelativePath>windows/jni/x86_64</jniRelativePath>
             </properties>
@@ -41,7 +41,7 @@
                 </os>
             </activation>
             <properties>
-                <script.toExecute>${project.basedir}/build_v8_JNI.sh</script.toExecute>
+                <script.toExecute>${project.basedir}/build.sh</script.toExecute>
                 <script.executor>bash</script.executor>
                 <jniRelativePath>linux/jni/x86_64</jniRelativePath>
             </properties>
@@ -54,7 +54,7 @@
                 </os>
             </activation>
             <properties>
-                <script.toExecute>${project.basedir}/build_v8_JNI.sh</script.toExecute>
+                <script.toExecute>${project.basedir}/build.sh</script.toExecute>
                 <script.executor>zsh</script.executor>
                 <jniRelativePath>macos/jni/x86_64</jniRelativePath>
             </properties>

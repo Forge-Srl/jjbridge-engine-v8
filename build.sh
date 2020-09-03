@@ -6,11 +6,10 @@ fi
 # --- Definitions ---
 # Error codes
 MISSING_FOLDER=1
-VAGRANT_ERROR=2
 
 # Other variables
 project_dir="$PWD"
-operating_systems="linux android"
+operating_systems="macos android" #"macos windows linux android"
 
 # Utility functions
 INFO () { echo "[INFO] $*"; }
@@ -26,18 +25,7 @@ for os_name in $operating_systems; do
     INFO "Build not found for '$os_name' -> Starting build process"
 
     cd "$os_name" || exit $MISSING_FOLDER
-
-    export VAGRANT_DOTFILE_PATH="$project_dir/$os_name/target/vagrant"
-    vagrant up #--provision
-    if [ $? -ne 0 ]; then
-        vagrant halt
-        ERROR "An error occurred while building for '$os_name'. Please check the full log for more info."
-        ERROR "For vagrant folder see $VAGRANT_DOTFILE_PATH"
-        exit $VAGRANT_ERROR
-    else
-        vagrant halt
-    fi
-
+    sh ./build.sh
     cd ..
   else
     INFO "Build found for '$os_name' -> Skipping!"

@@ -1,32 +1,34 @@
-#!/bin/bash
-echo "### Cleaning..."
-cd /opt/build || exit
-rm -rf build
-mkdir build
-cd build
+[ -d target ] || mkdir target
+cd target
+
+[ -d ndk ] || (
+  echo "Android NDK not found. Downloading..."
+
+  if [ "$(uname)" == "Darwin" ]; then
+    curl -o ndk.zip https://dl.google.com/android/repository/android-ndk-r20b-darwin-x86_64.zip
+  else
+    curl -o ndk.zip https://dl.google.com/android/repository/android-ndk-r20b-linux-x86_64.zip
+  fi
+  unzip -o ndk.zip -d ./ndk
+  rm ndk.zip
+)
+ndk_path=$(find "$PWD/ndk" -mindepth 1 -maxdepth 1 -type d)
+
+rm -rf native
+mkdir native
+cd native
 
 architectures="arm64-v8a armeabi-v7a x86_64 x86"
-ndk_path=$(find /opt/ndk -mindepth 1 -maxdepth 1 -type d)
-export CXX="clang"
-
 for arch in $architectures; do
-  echo "### Building $arch..."
   mkdir "$arch"
   (
     cd "$arch" || exit
-    cmake ../.. \
-      -DCMAKE_SYSTEM_NAME=Android \
-      -DANDROID_TOOLCHAIN=clang \
-      -DCMAKE_SYSTEM_VERSION=21 \
-      -DANDROID_NATIVE_API_LEVEL=21 \
-      -DCMAKE_ANDROID_ARCH_ABI="$arch" \
-      -DANDROID_ABI="$arch" \
-      -DCMAKE_TOOLCHAIN_FILE="$ndk_path/build/cmake/android.toolchain.cmake" \
-      -DCMAKE_ANDROID_NDK="$ndk_path"
+    cmake ../../../.. -DJJB_TARGET_PLATFORM=Android -DANDROID_ABI="$arch" -DNDK_PATH="$ndk_path"
     make && (
-      mkdir -p "/opt/target/$arch"
-      cp libV8-wrapper.so "/opt/target/$arch"
-      cp "/opt/build/v8/platforms/android-$arch"/* "/opt/target/$arch"
+      cd ../../..
+      mkdir -p "jni/$arch"
+      cp "target/native/$arch/libV8-wrapper.so" "jni/$arch"
+      cp "../jni/v8/platforms/android-$arch"/* "jni/$arch"
     )
   )
 done

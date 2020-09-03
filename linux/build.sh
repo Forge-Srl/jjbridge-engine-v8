@@ -1,15 +1,13 @@
-#!/bin/bash
-echo "### Cleaning..."
-cd /opt/build || exit
-rm -rf build
-mkdir build
-cd build
+[ -d target ] || mkdir target
+cd target
+rm -rf native
+mkdir native
+cd native
 
-echo "### Building..."
-export CXX="clang"
-cmake ..
+cmake ../../.. -DJJB_TARGET_PLATFORM=Linux
 make && (
-  mkdir -p /opt/target/x86_64
-  cp libV8-wrapper.so /opt/target/x86_64
-  cp /opt/build/v8/platforms/linux-x86_64/* /opt/target/x86_64
+  cd ../..
+  mkdir -p jni/x86_64
+  cp target/native/libV8-wrapper.so jni/x86_64
+  cp ../jni/v8/platforms/linux-x86_64/* jni/x86_64
 )
