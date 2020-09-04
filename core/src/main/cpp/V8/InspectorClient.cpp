@@ -65,9 +65,9 @@ void InspectorClient::dispatchMessage(const v8_inspector::StringView& string)
     session->dispatchProtocolMessage(string);
 }
 
-void InspectorClient::createContext(const v8::Local<v8::Context> context, const char* name)
+void InspectorClient::createContext(const v8::Local<v8::Context> context, std::u16string name)
 {
-    v8_inspector::StringView contextName((uint8_t*) name, strlen(name));
+    v8_inspector::StringView contextName((uint16_t*) name.c_str(), name.length());
     inspector->contextCreated(v8_inspector::V8ContextInfo(context, contextGroupId, contextName));
 }
 
@@ -92,7 +92,8 @@ void InspectorClient::onMessageReceive(JNIEnv* env, jstring message)
 InspectorClient* InspectorClient::safeCast(JNIEnv* env, jlong inspectorHandle)
 {
    if (inspectorHandle == 0) {
-      Runtime::environment->throwNullPointerException(env, "Inspector handle is null.");
+      std::u16string error = u"Inspector handle is null.";
+      Runtime::environment->throwNullPointerException(env, (jchar*) error.c_str(), error.length());
    }
 
   return reinterpret_cast<InspectorClient*>(inspectorHandle);

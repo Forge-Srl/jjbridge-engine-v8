@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <string>
 #include "libplatform/libplatform.h"
 #include "v8.h"
 
@@ -412,8 +413,8 @@ extern "C"
 
 		v8::Function* function = v8::Function::Cast(*(object->Get(context, v8::String::NewFromUtf8Literal(runtime->isolate, "toISOString")).ToLocalChecked()));
 		v8::Local<v8::Value> dateTime = (function->Call(context, object, 0, nullptr)).ToLocalChecked();
-		v8::String::Utf8Value unicodeString(runtime->isolate, (dateTime->ToString(context)).ToLocalChecked());
-		return env->NewStringUTF(*unicodeString);
+		v8::String::Value unicodeString(runtime->isolate, (dateTime->ToString(context)).ToLocalChecked());
+		return env->NewString(*unicodeString, unicodeString.length());
 	}
 
 	JNIEXPORT void JNICALL
@@ -471,7 +472,7 @@ extern "C"
 
         if (maybeValue.IsEmpty())
         {
-        	runtime->throwExecutionException(env, "Empty function result.");
+        	runtime->throwExecutionException(env, u"Empty function result.");
             return nullptr;
         }
 
@@ -509,7 +510,7 @@ extern "C"
 
         if (maybeValue.IsEmpty())
         {
-        	runtime->throwExecutionException(env, "Empty function result.");
+        	runtime->throwExecutionException(env, u"Empty function result.");
             return nullptr;
         }
 
@@ -639,7 +640,7 @@ extern "C"
         newLocalContext(runtime, context)
 
         InspectorClient* inspectorClient = new InspectorClient(env, messageHandler, runtime);
-        inspectorClient->createContext(context, "JJBridge-V8 Main Context");
+        inspectorClient->createContext(context, u"JJBridge-V8 Main Context");
         return inspectorClient->getHandle();
 	}
 

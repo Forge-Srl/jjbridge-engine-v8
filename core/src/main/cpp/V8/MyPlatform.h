@@ -11,7 +11,7 @@ private:
 
 public:
 	MyPlatform()
-	: platform(std::move(v8::platform::NewDefaultPlatform()))
+	: platform(v8::platform::NewDefaultPlatform())
 	{}
 
 	virtual void OnCriticalMemoryPressure() override { platform->OnCriticalMemoryPressure(); }

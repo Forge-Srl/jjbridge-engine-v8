@@ -1,21 +1,20 @@
 #include "Runtime.h"
 
-#include <sstream>
 #include <string>
 #include "libplatform/libplatform.h"
 #include "v8.h"
 #include "Environment.h"
 #include "Handle.h"
 
-std::string getMessage(v8::Local<v8::Context> context, v8::TryCatch* tryCatch)
+std::u16string getMessage(v8::Local<v8::Context> context, v8::TryCatch* tryCatch)
 {
     v8::MaybeLocal<v8::Value> stack = tryCatch->StackTrace(context);
     v8::Local<v8::String> message;
     if (stack.IsEmpty()) { message = tryCatch->Message()->Get(); }
     else { message = v8::Local<v8::String>::Cast(stack.ToLocalChecked()); }
 
-    v8::String::Utf8Value unicodeString(context->GetIsolate(), message);
-    std::string str(*unicodeString);
+    v8::String::Value unicodeString(context->GetIsolate(), message);
+    std::u16string str((char16_t*) *unicodeString);
     return str;
 }
 
@@ -47,7 +46,6 @@ v8::Local<v8::String> Runtime::createV8String(JNIEnv* env, jstring &string) cons
 	return result;
 }
 
-#include <stdexcept>
 bool Runtime::compileScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v8::String> fileName, v8::Local<v8::String> source, v8::Local<v8::Script> &script)
 {
 	v8::TryCatch tryCatch(isolate);
@@ -64,14 +62,15 @@ bool Runtime::compileScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Loc
 
     if (tryCatch.HasCaught())
 	{
-	    std::string tmp = getMessage(context, &tryCatch);
-	    environment->throwCompilationException(env, tmp.c_str());
+	    std::u16string tmp = getMessage(context, &tryCatch);
+	    environment->throwCompilationException(env, (jchar*) tmp.c_str(), tmp.length());
     	return false;
 	}
 
 	if (maybeScript.IsEmpty())
 	{
-	    environment->throwCompilationException(env, "Empty script result.");
+	    std::u16string tmp = u"Empty script result.";
+	    environment->throwCompilationException(env, (jchar*) tmp.c_str(), tmp.length());
 	    return false;
 	}
 
@@ -92,7 +91,7 @@ bool Runtime::runScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v
 
 	if (maybeResult.IsEmpty())
 	{
-	    throwExecutionException(env, "Empty script result.");
+	    throwExecutionException(env, u"Empty script result.");
 	    return false;
 	}
 
@@ -106,13 +105,11 @@ void Runtime::throwJNIExceptionInJS(JNIEnv* env, jthrowable throwable)
     jmethodID getMessage = env->GetMethodID(clazz, "toString", "()Ljava/lang/String;");
     jstring message = (jstring) env->CallObjectMethod(throwable, getMessage);
 
-    std::stringstream ss;
-    const char* nativeMessage = env->GetStringUTFChars(message, nullptr);
-    std::string msg(nativeMessage);
-    ss << "java exception in callback [" << msg << "].";
-    env->ReleaseStringUTFChars(message, nativeMessage);
+    v8::Local<v8::String> jsMessage = createV8String(env, message);
+    jsMessage = v8::String::Concat(isolate, v8::String::NewFromUtf8Literal(isolate, "java exception in callback ["), jsMessage);
+    jsMessage = v8::String::Concat(isolate, jsMessage, v8::String::NewFromUtf8Literal(isolate, "]."));
 
-    v8::Local<v8::Value> exception = v8::Exception::Error(v8::String::NewFromUtf8(isolate, ss.str().c_str()).ToLocalChecked());
+    v8::Local<v8::Value> exception = v8::Exception::Error(jsMessage);
     v8::Local<v8::Object>::Cast(exception)
         ->Set(v8::Local<v8::Context>::New(isolate, context),
             v8::String::NewFromUtf8Literal(isolate, "_nativeException"),
@@ -122,30 +119,31 @@ void Runtime::throwJNIExceptionInJS(JNIEnv* env, jthrowable throwable)
 
 void Runtime::throwExecutionException(JNIEnv* env, v8::Local<v8::Context> context, v8::TryCatch* tryCatch)
 {
-    std::string message = getMessage(context, tryCatch);
+    std::u16string message = getMessage(context, tryCatch);
     v8::MaybeLocal<v8::Value> inner = v8::Local<v8::Object>::Cast(tryCatch->Exception())
         ->Get(context, v8::String::NewFromUtf8Literal(isolate, "_nativeException"));
 
     if (inner.IsEmpty())
     {
-        environment->throwExecutionException(env, message.c_str());
+        environment->throwExecutionException(env, (jchar*) message.c_str(), message.length());
     }
     else
     {
         jthrowable exception = (jthrowable) v8::Local<v8::External>::Cast(inner.ToLocalChecked())->Value();
-        environment->throwExecutionException(env, message.c_str(), exception);
+        environment->throwExecutionException(env, (jchar*) message.c_str(), message.length(), exception);
     }
 }
 
-void Runtime::throwExecutionException(JNIEnv* env, const char* message)
+void Runtime::throwExecutionException(JNIEnv* env, std::u16string message)
 {
-    environment->throwExecutionException(env, message);
+    environment->throwExecutionException(env, (jchar*) message.c_str(), message.length());
 }
 
 Runtime* Runtime::safeCast(JNIEnv* env, jlong runtimeHandle)
 {
 	if (runtimeHandle == 0) {
-		environment->throwNullPointerException(env, "Runtime handle is null.");
+	    std::u16string error = u"Runtime handle is null.";
+		environment->throwNullPointerException(env, (jchar*) error.c_str(), error.length());
 	}
 
 	return reinterpret_cast<Runtime*>(runtimeHandle);

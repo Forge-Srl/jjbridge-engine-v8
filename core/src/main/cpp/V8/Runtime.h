@@ -2,7 +2,7 @@
 #define RUNTIME_H_
 
 #include <jni.h>
-
+#include <string>
 #include "libplatform/libplatform.h"
 #include "v8.h"
 
@@ -43,7 +43,7 @@ public:
 
 	void throwJNIExceptionInJS(JNIEnv* env, jthrowable throwable);
 	void throwExecutionException(JNIEnv* env, v8::Local<v8::Context> context, v8::TryCatch* tryCatch);
-	void throwExecutionException(JNIEnv* env, const char* message);
+	void throwExecutionException(JNIEnv* env, std::u16string message);
 
     inline jobject getReferenceType(JNIEnv* env, Handle* handle)
     {

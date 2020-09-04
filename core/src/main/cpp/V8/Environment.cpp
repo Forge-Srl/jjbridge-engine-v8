@@ -22,20 +22,24 @@ Environment::Environment(JavaVM* jvm, JNIEnv* env)
 , INIT_FIELD(referenceHandleField, referenceClass, "handle", "J")
 
 , INIT_CLASS(nullPointerExceptionClass, "java/lang/NullPointerException")
+, INIT_METHOD(nullPointerExceptionCtor, nullPointerExceptionClass, "<init>", "(Ljava/lang/String;)V")
 , INIT_CLASS(compilationExceptionClass, "jjbridge/common/runtime/CompilationException")
+, INIT_METHOD(compilationExceptionCtor, compilationExceptionClass, "<init>", "(Ljava/lang/String;)V")
 , INIT_CLASS(executionExceptionClass, "jjbridge/common/runtime/ExecutionException")
 , INIT_METHOD(executionExceptionCtor, executionExceptionClass, "<init>", "(Ljava/lang/String;Ljava/lang/Throwable;)V")
 
 , INIT_CLASS(cacheClass, "jjbridge/utils/Cache")
+, INIT_CLASS(functionCallbackClass, "jjbridge/common/value/strategy/FunctionCallback")
+, INIT_METHOD(functionCallbackApply, functionCallbackClass, "apply", "([Ljjbridge/common/runtime/JSReference;)Ljjbridge/common/runtime/JSReference;")
+, INIT_CLASS(jsTypeClass, "jjbridge/common/value/JSType")
+
+, INIT_CLASS(messageHandlerClass, "jjbridge/v8/inspector/V8MessageHandler")
+
 , INIT_METHOD(cacheStore, cacheClass, "store", "(JLjava/lang/Object;)V")
 , INIT_METHOD(cacheGet, cacheClass, "get", "(J)Ljava/lang/Object;")
 , INIT_METHOD(cacheDelete, cacheClass, "delete", "(J)V")
 , INIT_METHOD(cacheClear, cacheClass, "clear", "()V")
 
-, INIT_CLASS(functionCallbackClass, "jjbridge/common/value/strategy/FunctionCallback")
-, INIT_METHOD(functionCallbackApply, functionCallbackClass, "apply", "([Ljjbridge/common/runtime/JSReference;)Ljjbridge/common/runtime/JSReference;")
-
-, INIT_CLASS(jsTypeClass, "jjbridge/common/value/JSType")
 , INIT_ENUM_VALUE(jsTypeUndefined, jsTypeClass, "Undefined", "Ljjbridge/common/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeNull, jsTypeClass, "Null", "Ljjbridge/common/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeBoolean, jsTypeClass, "Boolean", "Ljjbridge/common/value/JSType;")
@@ -48,7 +52,6 @@ Environment::Environment(JavaVM* jvm, JNIEnv* env)
 , INIT_ENUM_VALUE(jsTypeFunction, jsTypeClass, "Function", "Ljjbridge/common/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeArray, jsTypeClass, "Array", "Ljjbridge/common/value/JSType;")
 
-, INIT_CLASS(messageHandlerClass, "jjbridge/v8/inspector/V8MessageHandler")
 , INIT_METHOD(messageHandlerSendToInspector, messageHandlerClass, "sendToInspector", "(Ljava/lang/String;)V")
 {
 	_jvm = jvm;

@@ -19,17 +19,19 @@ private:
 
     const jclass referenceClass;
     const jmethodID referenceCtor;
-    const jclass cacheClass;
+    const jfieldID referenceHandleField;
 
 	const jclass nullPointerExceptionClass;
+	const jmethodID nullPointerExceptionCtor;
 	const jclass compilationExceptionClass;
+	const jmethodID compilationExceptionCtor;
 	const jclass executionExceptionClass;
 	const jmethodID executionExceptionCtor;
 
-    const jfieldID referenceHandleField;
-    const jclass jsTypeClass;
+    const jclass cacheClass;
     const jclass functionCallbackClass;
     const jmethodID functionCallbackApply;
+    const jclass jsTypeClass;
 
     const jclass messageHandlerClass;
 
@@ -116,24 +118,24 @@ public:
 		return env->GetLongField(reference, referenceHandleField);
 	}
 
-	inline void throwNullPointerException(JNIEnv* env, const char* message) const
+	inline void throwNullPointerException(JNIEnv* env, const jchar* message, jsize length) const
 	{
-        env->ThrowNew(nullPointerExceptionClass, message);
+        env->Throw((jthrowable) env->NewObject(nullPointerExceptionClass, nullPointerExceptionCtor, env->NewString(message, length)));
 	}
 
-	inline void throwCompilationException(JNIEnv* env, const char* message) const
+	inline void throwCompilationException(JNIEnv* env, const jchar* message, jsize length) const
 	{
-        env->ThrowNew(compilationExceptionClass, message);
+        env->Throw((jthrowable) env->NewObject(compilationExceptionClass, compilationExceptionCtor, env->NewString(message, length)));
 	}
 
-	inline void throwExecutionException(JNIEnv* env, const char* message) const
+	inline void throwExecutionException(JNIEnv* env, const jchar* message, jsize length) const
 	{
-        env->Throw((jthrowable) env->NewObject(executionExceptionClass, executionExceptionCtor, env->NewStringUTF(message)));
+        env->Throw((jthrowable) env->NewObject(executionExceptionClass, executionExceptionCtor, env->NewString(message, length)));
 	}
 
-	inline void throwExecutionException(JNIEnv* env, const char* message, jthrowable exception) const
+	inline void throwExecutionException(JNIEnv* env, const jchar* message, jsize length, jthrowable exception) const
 	{
-        env->Throw((jthrowable) env->NewObject(executionExceptionClass, executionExceptionCtor, env->NewStringUTF(message), exception));
+        env->Throw((jthrowable) env->NewObject(executionExceptionClass, executionExceptionCtor, env->NewString(message, length), exception));
 	}
 
     inline void sendToInspector(JNIEnv* env, jobject object, const jchar* message, jsize length) const

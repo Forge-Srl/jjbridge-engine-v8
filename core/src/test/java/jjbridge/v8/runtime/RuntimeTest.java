@@ -579,7 +579,7 @@ public class RuntimeTest {
 
     @Test
     public void createNewFunctionReference_Exception() {
-        RuntimeException innerException = new RuntimeException("error message");
+        RuntimeException innerException = new RuntimeException("Error message with some gibberish text \uD83D\uDE28⿕\uD83D\uDCAB to test Unicode support");
 
         try (JSRuntime runtime = engine.newRuntime()) {
             JSReference functionRef = runtime.newReference(JSType.Function);

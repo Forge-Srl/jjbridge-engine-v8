@@ -38,7 +38,7 @@ public:
         return reinterpret_cast<jlong>(this);
     }
 
-    void createContext(const v8::Local<v8::Context> context, const char* name);
+    void createContext(const v8::Local<v8::Context> context, std::u16string name);
     void onMessageReceive(JNIEnv* env, jstring message);
 
     static InspectorClient* safeCast(JNIEnv* env, jlong inspectorHandle);
