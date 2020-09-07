@@ -24,7 +24,7 @@ endif()
 # Keep all the previous settings before project() otherwise they will be ignored!
 
 project(JJBridge_V8)
-set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/core/src/main/cpp")
+set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/main/cpp")
 set(V8_DIR "${CMAKE_CURRENT_SOURCE_DIR}/jni/v8")
 
 if(JJB_TARGET_PLATFORM STREQUAL "Linux")

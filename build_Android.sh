@@ -1,6 +1,10 @@
-[ -d target ] || mkdir target
-cd target
+# Hack for string expansion to array in Zsh like Bash
+if type emulate >/dev/null 2>/dev/null; then
+  emulate ksh;
+fi
 
+[ -d tools ] || mkdir tools
+cd tools
 [ -d ndk ] || (
   echo "Android NDK not found. Downloading..."
 
@@ -13,22 +17,27 @@ cd target
   rm ndk.zip
 )
 ndk_path=$(find "$PWD/ndk" -mindepth 1 -maxdepth 1 -type d)
+cd ..
 
-rm -rf native
-mkdir native
-cd native
+[ -d target ] || mkdir target
+cd target
+rm -rf jni/android
+rm -rf jni/build/android
+
+mkdir -p jni/build/android
+cd jni/build/android
 
 architectures="arm64-v8a armeabi-v7a x86_64 x86"
 for arch in $architectures; do
   mkdir "$arch"
   (
     cd "$arch" || exit
-    cmake ../../../.. -DJJB_TARGET_PLATFORM=Android -DANDROID_ABI="$arch" -DNDK_PATH="$ndk_path"
+    cmake ../../../../.. -DJJB_TARGET_PLATFORM=Android -DANDROID_ABI="$arch" -DNDK_PATH="$ndk_path"
     make && (
       cd ../../..
-      mkdir -p "jni/$arch"
-      cp "target/native/$arch/libV8-wrapper.so" "jni/$arch"
-      cp "../jni/v8/platforms/android-$arch"/* "jni/$arch"
+      mkdir -p "android/$arch"
+      cp "build/android/$arch/libV8-wrapper.so" "android/$arch"
+      cp "../../jni/v8/platforms/android-$arch"/* "android/$arch"
     )
   )
 done
