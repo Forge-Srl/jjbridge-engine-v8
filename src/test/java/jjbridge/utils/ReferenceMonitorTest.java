@@ -17,18 +17,20 @@ public class ReferenceMonitorTest {
     public void run() {
         referenceMonitor.start();
 
-        boolean[] cleanUpDone = new boolean[500];
+        boolean[] cleanUpDone = new boolean[100];
         for (int i = 0; i < cleanUpDone.length; i++) {
             cleanUpDone[i] = false;
             int finalI = i;
             referenceMonitor.track(new Object(), () -> cleanUpDone[finalI] = true);
         }
 
-        loseTime(10000000);
+        System.gc();
+        loseTime(20000000);
         System.gc();
 
-        for (boolean b : cleanUpDone) {
-            assertTrue(b);
+        for (int i = 0; i < cleanUpDone.length; i++)
+        {
+            assertTrue("Clean up " + i, cleanUpDone[i]);
         }
 
         referenceMonitor.interrupt();

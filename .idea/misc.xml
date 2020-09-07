@@ -2,25 +2,13 @@
 <project version="4">
   <component name="CppTools.Loader" reportImplicitCastToBool="false" reportNameReferencedOnce="false" version="3" compilerSelect="AUTO" />
   <component name="FrameworkDetectionExcludesConfiguration">
-    <file type="android" url="file://$PROJECT_DIR$/android" />
-    <file type="android" url="file://$PROJECT_DIR$/src/main/java" />
-    <file type="android" url="file://$PROJECT_DIR$/target/classes" />
-    <file type="android" url="file://$PROJECT_DIR$/target/jni/android" />
+    <file type="android" url="file://$PROJECT_DIR$" />
   </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
       </list>
-    </option>
-    <option name="ignoredFiles">
-      <set>
-        <option value="$PROJECT_DIR$/android/pom.xml" />
-        <option value="$PROJECT_DIR$/core/pom.xml" />
-        <option value="$PROJECT_DIR$/linux/pom.xml" />
-        <option value="$PROJECT_DIR$/macos/pom.xml" />
-        <option value="$PROJECT_DIR$/windows/pom.xml" />
-      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="false" project-jdk-name="1.8" project-jdk-type="JavaSDK">
