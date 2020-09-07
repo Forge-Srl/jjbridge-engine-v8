@@ -20,7 +20,7 @@
     </dependencySets>
     <fileSets>
         <fileSet>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>/jni</outputDirectory>
             <directory>target/jni/windows/x86_64</directory>
             <includes>
                 <include>**</include>

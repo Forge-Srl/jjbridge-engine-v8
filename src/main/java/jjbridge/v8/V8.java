@@ -1,11 +1,12 @@
 package jjbridge.v8;
 
+import jjbridge.utils.NativeLibraryLoader;
 import jjbridge.utils.ReferenceMonitor;
 import jjbridge.v8.runtime.Reference;
 
 public class V8 {
     static {
-        System.loadLibrary("V8-wrapper");
+        NativeLibraryLoader.load("V8-wrapper");
     }
 
     private static V8 instance;
