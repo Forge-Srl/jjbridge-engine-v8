@@ -3,6 +3,8 @@ package jjbridge.v8.runtime;
 import jjbridge.common.runtime.JSReference;
 import jjbridge.common.value.JSType;
 
+import java.util.Objects;
+
 public class Reference implements JSReference {
     public final long handle;
     private final JSType nominalType;
@@ -31,5 +33,11 @@ public class Reference implements JSReference {
         if (!(obj instanceof Reference)) return false;
         Reference other = (Reference) obj;
         return this.equalityChecker.checkAreEqual(this.handle, other.handle);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return ((int) (handle ^ (handle >>> 32)) * 31) ^ nominalType.hashCode();
     }
 }

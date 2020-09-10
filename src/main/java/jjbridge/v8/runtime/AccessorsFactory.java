@@ -74,20 +74,29 @@ class AccessorsFactory {
         return value -> this.v8.setExternalValue(this.runtimeHandle, handle, value);
     }
 
+    // Must be used with synchronized due to SpotBugs STCAL_INVOKE_ON_STATIC_DATE_FORMAT_INSTANCE. See also:
+    // - https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6231579
+    // - https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6178997
     private static final SimpleDateFormat simpleDateFormat =
             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     protected ValueGetter<Date> dateGetter(long handle) {
         return () -> {
-            try {
-                return simpleDateFormat.parse(this.v8.getDateTimeString(this.runtimeHandle, handle));
-            } catch (ParseException e) {
-                throw new IllegalArgumentException("Wrong date-time format.");
+            synchronized (simpleDateFormat) {
+                try {
+                    return simpleDateFormat.parse(this.v8.getDateTimeString(this.runtimeHandle, handle));
+                } catch (ParseException e) {
+                    throw new IllegalArgumentException("Wrong date-time format.");
+                }
             }
         };
     }
 
     protected ValueSetter<Date> dateSetter(long handle) {
-        return value -> this.v8.setDateTime(this.runtimeHandle, handle, simpleDateFormat.format(value));
+        return value -> {
+            synchronized (simpleDateFormat) {
+                this.v8.setDateTime(this.runtimeHandle, handle, simpleDateFormat.format(value));
+            }
+        };
     }
 
     protected ObjectPropertyGetter<Reference> propertyGetter(long handle) {

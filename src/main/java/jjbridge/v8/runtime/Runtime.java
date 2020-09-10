@@ -1,5 +1,6 @@
 package jjbridge.v8.runtime;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jjbridge.common.runtime.JSBaseRuntime;
 import jjbridge.common.value.*;
 import jjbridge.utils.ReferenceMonitor;
@@ -11,6 +12,8 @@ public class Runtime extends JSBaseRuntime<Reference> {
     private final AccessorsFactory accessorsFactory;
     private final ReferenceMonitor<Reference> referenceMonitor;
 
+    @SuppressFBWarnings(value = "SC_START_IN_CTOR",
+            justification = "This class should be final but it is not due to mocking in tests")
     public Runtime(V8 v8, long runtimeHandle, ReferenceMonitor<Reference> referenceMonitor) {
         super();
         this.v8 = v8;
@@ -142,5 +145,11 @@ public class Runtime extends JSBaseRuntime<Reference> {
     public boolean equals(Object obj) {
         if (!(obj instanceof Runtime)) return false;
         return this.runtimeHandle == ((Runtime) obj).runtimeHandle;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return (int) (runtimeHandle ^ (runtimeHandle >>> 32));
     }
 }

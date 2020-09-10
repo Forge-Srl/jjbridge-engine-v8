@@ -1,5 +1,7 @@
 package jjbridge.utils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,6 +16,7 @@ public class NativeLibraryLoader
 {
     private static File tempDir;
 
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public static void load(final String libName)
     {
         try
@@ -48,6 +51,7 @@ public class NativeLibraryLoader
         }
     }
 
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     private static void extractJniLibraries() throws IOException
     {
         if (tempDir != null) return;
@@ -78,17 +82,25 @@ public class NativeLibraryLoader
 
     private static ArrayList<String> getResourceFileNames(CodeSource codeSource, String path) throws IOException
     {
-        ZipInputStream zipInputStream = new ZipInputStream(codeSource.getLocation().openStream());
+        InputStream in = codeSource.getLocation().openStream();
+        ZipInputStream zipInputStream = new ZipInputStream(in);
         ArrayList<String> jniFiles = new ArrayList<>();
 
-        for (ZipEntry entry = zipInputStream.getNextEntry(); entry != null; entry = zipInputStream.getNextEntry())
-        {
-            String name = entry.getName();
-            if (!entry.isDirectory() && name.startsWith(path))
+        try {
+            for (ZipEntry entry = zipInputStream.getNextEntry(); entry != null; entry = zipInputStream.getNextEntry())
             {
-                jniFiles.add(name);
+                String name = entry.getName();
+                if (!entry.isDirectory() && name.startsWith(path))
+                {
+                    jniFiles.add(name);
+                }
             }
+        } finally
+        {
+            zipInputStream.close();
+            in.close();
         }
+
         return jniFiles;
     }
 

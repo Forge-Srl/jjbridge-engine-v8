@@ -1,5 +1,6 @@
 package jjbridge.v8;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jjbridge.utils.NativeLibraryLoader;
 import jjbridge.utils.ReferenceMonitor;
 import jjbridge.v8.runtime.Reference;
@@ -11,11 +12,11 @@ public class V8 {
 
     private static V8 instance;
     protected V8() {} //not private because mockito sucks
-    static V8 getInstance() {
+    static synchronized V8 getInstance() {
         return instance != null ? instance : (instance = new V8());
     }
 
-    //invoked by native code
+    @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", justification = "Called by native code")
     private static void track(long runtimeHandle, Reference reference, ReferenceMonitor<Reference> referenceMonitor) {
         // extracting handle value here to avoid further references to object in lambda which prevent garbage collection.
         long handle = reference.handle;
