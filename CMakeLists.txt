@@ -111,6 +111,13 @@ else()
     set(ANDROID_ALLOW_UNDEFINED_SYMBOLS FALSE)
 endif()
 
+find_program(CLANG_TIDY_COMMAND NAMES clang-tidy)
+if(NOT CLANG_TIDY_COMMAND)
+    message(WARNING "clang-tidy executable not found - skipped")
+    set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE)
+else()
+    set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-config;-header-filter='${SRC_DIR}/*'" )
+endif()
 
 ##############################################################################
 # Add all source files and external libraries
