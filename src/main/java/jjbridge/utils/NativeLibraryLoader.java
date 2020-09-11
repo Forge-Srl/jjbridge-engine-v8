@@ -6,7 +6,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.*;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.ProviderNotFoundException;
+import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
@@ -22,12 +26,14 @@ public class NativeLibraryLoader
         try
         {
             System.loadLibrary(libName);
-        } catch (Throwable t)
+        }
+        catch (Throwable t)
         {
             try
             {
                 extractJniLibraries();
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 throw new RuntimeException(e);
             }
@@ -36,13 +42,15 @@ public class NativeLibraryLoader
             try
             {
                 System.load(library.getAbsolutePath());
-            } finally
+            }
+            finally
             {
                 if (isPosixCompliant())
                 {
                     // Assume POSIX compliant file system, can be deleted after loading
                     library.delete();
-                } else
+                }
+                else
                 {
                     // Assume non-POSIX, and don't delete until last file descriptor closed
                     library.deleteOnExit();
@@ -54,10 +62,16 @@ public class NativeLibraryLoader
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     private static void extractJniLibraries() throws IOException
     {
-        if (tempDir != null) return;
+        if (tempDir != null)
+        {
+            return;
+        }
 
         CodeSource codeSource = NativeLibraryLoader.class.getProtectionDomain().getCodeSource();
-        if (codeSource == null) throw new IOException("Cannot extract files from jar");
+        if (codeSource == null)
+        {
+            throw new IOException("Cannot extract files from jar");
+        }
 
         tempDir = createTempDirectory("jjbridge-v8");
         tempDir.deleteOnExit();
@@ -68,11 +82,13 @@ public class NativeLibraryLoader
             try (InputStream is = NativeLibraryLoader.class.getResourceAsStream("/" + path))
             {
                 Files.copy(is, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 tempFile.delete();
                 throw e;
-            } catch (NullPointerException e)
+            }
+            catch (NullPointerException e)
             {
                 tempFile.delete();
                 throw new FileNotFoundException("File " + path + " was not found inside JAR.");
@@ -86,7 +102,8 @@ public class NativeLibraryLoader
         ZipInputStream zipInputStream = new ZipInputStream(in);
         ArrayList<String> jniFiles = new ArrayList<>();
 
-        try {
+        try
+        {
             for (ZipEntry entry = zipInputStream.getNextEntry(); entry != null; entry = zipInputStream.getNextEntry())
             {
                 String name = entry.getName();
@@ -95,7 +112,8 @@ public class NativeLibraryLoader
                     jniFiles.add(name);
                 }
             }
-        } finally
+        }
+        finally
         {
             zipInputStream.close();
             in.close();
@@ -110,7 +128,9 @@ public class NativeLibraryLoader
         File generatedDir = new File(tempDir, prefix + System.nanoTime());
 
         if (!generatedDir.mkdir())
+        {
             throw new IOException("Failed to create temp directory " + generatedDir.getName());
+        }
 
         return generatedDir;
     }
@@ -120,7 +140,8 @@ public class NativeLibraryLoader
         try
         {
             return FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
-        } catch (FileSystemNotFoundException | ProviderNotFoundException | SecurityException e)
+        }
+        catch (FileSystemNotFoundException | ProviderNotFoundException | SecurityException e)
         {
             return false;
         }

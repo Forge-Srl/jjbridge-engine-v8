@@ -2,11 +2,24 @@ package jjbridge.v8.runtime;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jjbridge.common.runtime.JSBaseRuntime;
-import jjbridge.common.value.*;
+import jjbridge.common.value.JSArray;
+import jjbridge.common.value.JSBoolean;
+import jjbridge.common.value.JSDate;
+import jjbridge.common.value.JSDouble;
+import jjbridge.common.value.JSExternal;
+import jjbridge.common.value.JSFunction;
+import jjbridge.common.value.JSInteger;
+import jjbridge.common.value.JSNull;
+import jjbridge.common.value.JSObject;
+import jjbridge.common.value.JSString;
+import jjbridge.common.value.JSType;
+import jjbridge.common.value.JSUndefined;
+import jjbridge.common.value.JSValue;
 import jjbridge.utils.ReferenceMonitor;
 import jjbridge.v8.V8;
 
-public class Runtime extends JSBaseRuntime<Reference> {
+public class Runtime extends JSBaseRuntime<Reference>
+{
     private final V8 v8;
     private final long runtimeHandle;
     private final AccessorsFactory accessorsFactory;
@@ -14,7 +27,8 @@ public class Runtime extends JSBaseRuntime<Reference> {
 
     @SuppressFBWarnings(value = "SC_START_IN_CTOR",
             justification = "This class should be final but it is not due to mocking in tests")
-    public Runtime(V8 v8, long runtimeHandle, ReferenceMonitor<Reference> referenceMonitor) {
+    public Runtime(V8 v8, long runtimeHandle, ReferenceMonitor<Reference> referenceMonitor)
+    {
         super();
         this.v8 = v8;
         this.runtimeHandle = runtimeHandle;
@@ -24,21 +38,25 @@ public class Runtime extends JSBaseRuntime<Reference> {
         this.referenceMonitor.start();
     }
 
-    public long getNativeHandle() {
+    public long getNativeHandle()
+    {
         return runtimeHandle;
     }
 
     @Override
-    protected JSObject<Reference> getGlobalObject() {
-        Reference ref = (Reference) this.v8.globalObjectReference(this.runtimeHandle, this.accessorsFactory.referenceTypeGetter(),
-                this.accessorsFactory.equalityChecker());
+    protected JSObject<Reference> getGlobalObject()
+    {
+        Reference ref = (Reference) this.v8.globalObjectReference(this.runtimeHandle,
+                this.accessorsFactory.referenceTypeGetter(), this.accessorsFactory.equalityChecker());
         return resolveReference(ref);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <T extends JSValue> T resolve(Reference reference, JSType asType) {
-        switch (asType) {
+    protected <T extends JSValue> T resolve(Reference reference, JSType asType)
+    {
+        switch (asType)
+        {
             case Undefined:
                 return (T) new JSUndefined();
             case Null:
@@ -82,11 +100,13 @@ public class Runtime extends JSBaseRuntime<Reference> {
     }
 
     @Override
-    protected Reference createNewReference(JSType type) {
-        Reference reference = (Reference) this.v8.newValue(this.runtimeHandle, type, this.accessorsFactory.referenceTypeGetter(),
-                this.accessorsFactory.equalityChecker());
+    protected Reference createNewReference(JSType type)
+    {
+        Reference reference = (Reference) this.v8.newValue(this.runtimeHandle, type,
+                this.accessorsFactory.referenceTypeGetter(), this.accessorsFactory.equalityChecker());
 
-        switch (type) {
+        switch (type)
+        {
             case Undefined:
                 this.v8.initUndefinedValue(this.runtimeHandle, reference.handle);
                 break;
@@ -127,23 +147,33 @@ public class Runtime extends JSBaseRuntime<Reference> {
     }
 
     @Override
-    protected Reference runScript(String name, String script) {
-        return (Reference) this.v8.executeScript(this.runtimeHandle, name, script, this.accessorsFactory.referenceTypeGetter(),
-                this.accessorsFactory.equalityChecker());
+    protected Reference runScript(String name, String script)
+    {
+        return (Reference) this.v8.executeScript(this.runtimeHandle, name, script,
+                this.accessorsFactory.referenceTypeGetter(), this.accessorsFactory.equalityChecker());
     }
 
     @Override
-    public void close() {
-        if (this.isClosed()) return;
+    public void close()
+    {
+        if (this.isClosed())
+        {
+            return;
+        }
         this.referenceMonitor.interrupt();
-        if (this.v8.releaseRuntime(this.runtimeHandle)) {
+        if (this.v8.releaseRuntime(this.runtimeHandle))
+        {
             super.close();
         }
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Runtime)) return false;
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof Runtime))
+        {
+            return false;
+        }
         return this.runtimeHandle == ((Runtime) obj).runtimeHandle;
     }
 

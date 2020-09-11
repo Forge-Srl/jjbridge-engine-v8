@@ -1,5 +1,6 @@
 package jjbridge.utils;
 
-public interface CleanUpAction {
+public interface CleanUpAction
+{
     void cleanUp();
 }
