@@ -33,15 +33,15 @@ private:
 public:
     InspectorClient(JNIEnv* env, jobject handler, Runtime* runtime);
 
-    inline jlong getHandle() const
+    inline auto getHandle() const -> jlong
     {
         return reinterpret_cast<jlong>(this);
     }
 
-    void createContext(const v8::Local<v8::Context> context, std::u16string name);
+    void createContext(v8::Local<v8::Context> context, const std::u16string &name);
     void onMessageReceive(JNIEnv* env, jstring message);
 
-    static InspectorClient* safeCast(JNIEnv* env, jlong inspectorHandle);
+    static auto safeCast(JNIEnv* env, jlong inspectorHandle) -> InspectorClient*;
     static void Release(JNIEnv* env, InspectorClient* client);
 };
 

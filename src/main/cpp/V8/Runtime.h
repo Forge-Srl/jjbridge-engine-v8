@@ -9,10 +9,10 @@
 #include "Environment.h"
 #include "Handle.h"
 
-#define newLocalContext(runtime, contextVar) v8::Isolate::Scope isolateScope(runtime->isolate);\
-    v8::Locker locker(runtime->isolate);\
-	v8::HandleScope handle_scope(runtime->isolate);\
-	v8::Local<v8::Context> contextVar = runtime->context.Get(runtime->isolate);\
+#define newLocalContext(runtime, contextVar) v8::Isolate::Scope isolateScope((runtime)->isolate);\
+    v8::Locker locker((runtime)->isolate);\
+	v8::HandleScope handle_scope((runtime)->isolate);\
+	v8::Local<v8::Context> (contextVar) = (runtime)->context.Get((runtime)->isolate);\
 	v8::Context::Scope context_scope(contextVar);
 
 class Runtime
@@ -29,34 +29,39 @@ public:
 	v8::Isolate* isolate;
 	v8::Persistent<v8::Context> context;
 
-	Runtime(JNIEnv* env, jobject referenceMonitor, jobject functionCache, jobject typeGetterCache, jobject equalityCheckerCache, jobject externalCache);
+	Runtime(JNIEnv* env, jobject referenceMonitor, jobject functionCache, jobject typeGetterCache,
+	    jobject equalityCheckerCache, jobject externalCache);
 
-    inline jlong getHandle() const
+    inline auto getHandle() const -> jlong
     {
         return reinterpret_cast<jlong>(this);
     }
 
-	v8::Local<v8::String> createV8String(JNIEnv* env, jstring &string) const;
+	auto createV8String(JNIEnv* env, jstring &string) const -> v8::Local<v8::String>;
 
-	bool compileScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v8::String> fileName, v8::Local<v8::String> source, v8::Local<v8::Script> &script);
-	bool runScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v8::Script> script, v8::Local<v8::Value> &result);
+	auto compileScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v8::String> fileName,
+	    v8::Local<v8::String> source, v8::Local<v8::Script> &script) const -> bool;
+	auto runScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v8::Script> script,
+	    v8::Local<v8::Value> &result) -> bool;
 
-	void throwJNIExceptionInJS(JNIEnv* env, jthrowable throwable);
-	void throwExecutionException(JNIEnv* env, v8::Local<v8::Context> context, v8::TryCatch* tryCatch);
-	void throwExecutionException(JNIEnv* env, std::u16string message);
+	void throwJNIExceptionInJS(JNIEnv* env, jthrowable throwable) const;
+	void throwExecutionException(JNIEnv* env, v8::Local<v8::Context> context, v8::TryCatch* tryCatch) const;
+	void throwExecutionException(JNIEnv* env, const std::u16string &message);
 
-    inline jobject getReferenceType(JNIEnv* env, Handle* handle)
+    inline auto getReferenceType(JNIEnv* env, Handle* handle) -> jobject
     {
         return environment->getResultType(env, handle->GetLocal<v8::Value>());
     }
 
-    inline jobject NewReference(JNIEnv* env, const v8::Local<v8::Value>& value, jobject typeGetter, jobject equalityChecker)
+    inline auto NewReference(JNIEnv* env, const v8::Local<v8::Value>& value, jobject typeGetter,
+        jobject equalityChecker) -> jobject
     {
-        Handle* handle = new Handle(isolate, value);
+        auto* handle = new Handle(isolate, value);
         return NewReference(env, handle, getReferenceType(env, handle), typeGetter, equalityChecker);
     }
 
-    inline jobject NewReference(JNIEnv* env, Handle* handle, jobject type, jobject typeGetter, jobject equalityChecker) const
+    inline auto NewReference(JNIEnv* env, Handle* handle, jobject type, jobject typeGetter,
+        jobject equalityChecker) const -> jobject
 	{
 	    jobject reference = environment->NewReference(env, handle->AsLong(), type, typeGetter, equalityChecker);
 	    environment->trackReference(env, this->getHandle(), reference, this->referenceMonitor);
@@ -68,7 +73,7 @@ public:
     	env->CallVoidMethod(functionCache, environment->cacheStore, handle, object);
     }
 
-    inline jobject FunctionCacheGet(JNIEnv* env, jlong handle) const
+    inline auto FunctionCacheGet(JNIEnv* env, jlong handle) const -> jobject
     {
     	return env->CallObjectMethod(functionCache, environment->cacheGet, handle);
     }
@@ -83,7 +88,7 @@ public:
     	env->CallVoidMethod(typeGetterCache, environment->cacheStore, handle, object);
     }
 
-    inline jobject TypeGetterCacheGet(JNIEnv* env, jlong handle) const
+    inline auto TypeGetterCacheGet(JNIEnv* env, jlong handle) const -> jobject
     {
     	return env->CallObjectMethod(typeGetterCache, environment->cacheGet, handle);
     }
@@ -98,7 +103,7 @@ public:
     	env->CallVoidMethod(equalityCheckerCache, environment->cacheStore, handle, object);
     }
 
-    inline jobject EqualityCheckerCacheGet(JNIEnv* env, jlong handle) const
+    inline auto EqualityCheckerCacheGet(JNIEnv* env, jlong handle) const -> jobject
     {
     	return env->CallObjectMethod(equalityCheckerCache, environment->cacheGet, handle);
     }
@@ -113,7 +118,7 @@ public:
     	env->CallVoidMethod(externalCache, environment->cacheStore, handle, object);
     }
 
-    inline jobject ExternalCacheGet(JNIEnv* env, jlong handle) const
+    inline auto ExternalCacheGet(JNIEnv* env, jlong handle) const -> jobject
     {
     	return env->CallObjectMethod(externalCache, environment->cacheGet, handle);
     }
@@ -123,8 +128,8 @@ public:
     	env->CallVoidMethod(externalCache, environment->cacheDelete, handle);
     }
 
-	static Runtime* safeCast(JNIEnv* env, jlong runtimeHandle);
-	static bool safeRelease(JNIEnv* env, jlong runtimeHandle);
+	static auto safeCast(JNIEnv* env, jlong runtimeHandle) -> Runtime*;
+	static auto safeRelease(JNIEnv* env, jlong runtimeHandle) -> bool;
 };
 
 #endif

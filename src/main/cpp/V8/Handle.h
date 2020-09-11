@@ -32,12 +32,12 @@ public:
     }
 
     template<typename V, typename std::enable_if<std::is_base_of<v8::Value, V>::value>::type* = nullptr>
-    inline v8::Local<V> GetLocal()
+    inline auto GetLocal() -> v8::Local<V>
     {
         return v8::Local<V>::Cast(v8::Local<v8::Value>::New(isolate, *persistent));
     }
 
-    inline v8::Local<v8::Value> GetLocal()
+    inline auto GetLocal() -> v8::Local<v8::Value>
     {
         return v8::Local<v8::Value>::New(isolate, *persistent);
     }
@@ -49,7 +49,7 @@ public:
     }
 
     template<typename P>
-    inline P* GetFinalizerParameter()
+    inline auto GetFinalizerParameter() -> P*
     {
         return persistent->ClearWeak<P>();
     }
@@ -60,17 +60,17 @@ public:
         delete handle;
     }
 
-    inline jlong AsLong()
+    inline auto AsLong() -> jlong
     {
         return reinterpret_cast<jlong>(this);
     }
 
-    inline static Handle* FromLong(jlong handle)
+    inline static auto FromLong(jlong handle) -> Handle*
     {
         return reinterpret_cast<Handle*>(handle);
     }
 
-    inline bool operator == (const Handle &that)
+    inline auto operator == (const Handle &that) -> bool
     {
         return this->persistent == that.persistent;
     }

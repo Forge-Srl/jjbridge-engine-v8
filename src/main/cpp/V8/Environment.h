@@ -57,7 +57,7 @@ public:
 
 	Environment(JavaVM* jvm, JNIEnv* env);
 
-	int getCurrentThreadEnv(JNIEnv** env, int version)
+	auto getCurrentThreadEnv(JNIEnv** env, int version) -> int
 	{
 	    int getEnvStat = _jvm->GetEnv((void**) env, version);
 
@@ -91,14 +91,14 @@ public:
     	v8::V8::SetFlagsFromString(flags, strlen(flags));
 	}
 
-	jobject getResultType(JNIEnv* env, const v8::Local<v8::Value> &result);
+	auto getResultType(JNIEnv* env, const v8::Local<v8::Value> &result) const -> jobject;
 
-    inline jobject NewReference(JNIEnv* env, jlong objectHandle, jobject type, jobject typeGetter, jobject equalityChecker) const
+    inline auto NewReference(JNIEnv* env, jlong objectHandle, jobject type, jobject typeGetter, jobject equalityChecker) const -> jobject
     {
         return env->NewObject(referenceClass, referenceCtor, objectHandle, type, typeGetter, equalityChecker);
     }
 
-	inline jobjectArray NewReferenceArray(JNIEnv* env, jsize size) const
+	inline auto NewReferenceArray(JNIEnv* env, jsize size) const -> jobjectArray
     {
     	return env->NewObjectArray(size, referenceClass, nullptr);
     }
@@ -108,12 +108,12 @@ public:
         env->CallStaticVoidMethod(v8Class, v8trackReference, runtimeHandle, reference, referenceMonitor);
     }
 
-	inline jobject applyFunctionCallback(JNIEnv* env, jobject object, const jvalue* args) const
+	inline auto applyFunctionCallback(JNIEnv* env, jobject object, const jvalue* args) const -> jobject
 	{
 		return env->CallObjectMethodA(object, functionCallbackApply, args);
 	}
 
-	inline jlong getReferenceHandle(JNIEnv* env, jobject reference) const
+	inline auto getReferenceHandle(JNIEnv* env, jobject reference) const -> jlong
 	{
 		return env->GetLongField(reference, referenceHandleField);
 	}

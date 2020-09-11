@@ -116,7 +116,7 @@ if(NOT CLANG_TIDY_COMMAND)
     message(WARNING "clang-tidy executable not found - skipped")
     set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE)
 else()
-    set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-config;-header-filter='${SRC_DIR}/*'" )
+    set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-config;")
 endif()
 
 ##############################################################################

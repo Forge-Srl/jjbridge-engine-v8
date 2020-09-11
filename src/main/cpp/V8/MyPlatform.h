@@ -14,25 +14,67 @@ public:
 	: platform(v8::platform::NewDefaultPlatform())
 	{}
 
-	virtual void OnCriticalMemoryPressure() override { platform->OnCriticalMemoryPressure(); }
-	virtual bool OnCriticalMemoryPressure(size_t length) override { return platform->OnCriticalMemoryPressure(length); }
-	virtual int NumberOfWorkerThreads() override { return platform->NumberOfWorkerThreads(); }
-	virtual std::shared_ptr<v8::TaskRunner> GetForegroundTaskRunner(v8::Isolate* isolate) override { return platform->GetForegroundTaskRunner(isolate); }
-	virtual void CallOnWorkerThread(std::unique_ptr<v8::Task> task) override { platform->CallOnWorkerThread(std::move(task)); }
+    void OnCriticalMemoryPressure() override
+    {
+        platform->OnCriticalMemoryPressure();
+    }
+
+	auto OnCriticalMemoryPressure(size_t length) -> bool override
+	{
+	    return platform->OnCriticalMemoryPressure(length);
+	}
+
+	auto NumberOfWorkerThreads() -> int override
+	{
+	    return platform->NumberOfWorkerThreads();
+	}
+
+	auto GetForegroundTaskRunner(v8::Isolate* isolate) -> std::shared_ptr<v8::TaskRunner> override
+	{
+	    return platform->GetForegroundTaskRunner(isolate);
+	}
+
+	void CallOnWorkerThread(std::unique_ptr<v8::Task> task) override
+	{
+	    platform->CallOnWorkerThread(std::move(task));
+	}
 
     // override because default platform is UNIMPLEMENTED when delay_in_seconds != 0
-	virtual void CallDelayedOnWorkerThread(std::unique_ptr<v8::Task> task, double delay_in_seconds) override
+	void CallDelayedOnWorkerThread(std::unique_ptr<v8::Task> task, double delay_in_seconds) override
 	{
 	    delay_in_seconds = 0;
 	    platform->CallDelayedOnWorkerThread(std::move(task), delay_in_seconds);
 	}
 
-	virtual bool IdleTasksEnabled(v8::Isolate* isolate) override { return platform->IdleTasksEnabled(isolate); }
-	virtual double MonotonicallyIncreasingTime() override { return platform->MonotonicallyIncreasingTime(); }
-	virtual double CurrentClockTimeMillis() override { return platform->CurrentClockTimeMillis(); }
-	virtual StackTracePrinter GetStackTracePrinter() override { return platform->GetStackTracePrinter(); }
-	virtual v8::TracingController* GetTracingController() override { return platform->GetTracingController(); }
-	virtual v8::PageAllocator* GetPageAllocator() override { return platform->GetPageAllocator(); }
+	auto IdleTasksEnabled(v8::Isolate* isolate) -> bool override
+	{
+	    return platform->IdleTasksEnabled(isolate);
+	}
+
+	auto MonotonicallyIncreasingTime() -> double override
+	{
+	    return platform->MonotonicallyIncreasingTime();
+	}
+
+	auto CurrentClockTimeMillis() -> double override
+	{
+	    return platform->CurrentClockTimeMillis();
+	}
+
+	auto GetStackTracePrinter() -> StackTracePrinter override
+	{
+	    return platform->GetStackTracePrinter();
+	}
+
+	auto GetTracingController() -> v8::TracingController* override
+	{
+	    return platform->GetTracingController();
+	}
+
+	auto GetPageAllocator() -> v8::PageAllocator* override
+	{
+	    return platform->GetPageAllocator();
+	}
 };
 
 #endif

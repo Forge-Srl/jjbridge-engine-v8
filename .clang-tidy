@@ -1,3 +1,4 @@
 FormatStyle: 'none'
+HeaderFilterRegex: 'src/main/cpp/.*\.h$'
 Checks: '-*,clang-diagnostic-*,clang-analyzer-*,cppcoreguidlines-*,modernize-*,bugprone-*,portability-*,readability-*,performance-*,android-*'
 WarningsAsErrors: ''

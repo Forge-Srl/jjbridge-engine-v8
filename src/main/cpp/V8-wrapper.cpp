@@ -8,6 +8,8 @@
 #include "V8/Handle.h"
 #include "V8/InspectorClient.h"
 
+#define JPF(methodName) Java_jjbridge_v8_V8_##methodName
+
 Environment* Runtime::environment = nullptr;
 
 class FunctionCallbackData
@@ -30,7 +32,11 @@ public:
 
 	void clearReference()
 	{
-	    if (alreadyCleared) return;
+	    if (alreadyCleared)
+	    {
+	        return;
+	    }
+
 	    runtime->FunctionCacheDelete(env, handle->AsLong());
         runtime->TypeGetterCacheDelete(env, handle->AsLong());
         runtime->EqualityCheckerCacheDelete(env, handle->AsLong());
@@ -38,29 +44,41 @@ public:
         alreadyCleared = true;
 	}
 
-	inline void storeInCache(jobject handler, jobject typeGetter, jobject equalityChecker)
+	inline void storeInCache(jobject handler, jobject typeGetter, jobject equalityChecker) const
 	{
-	    if (alreadyCleared) return;
+	    if (alreadyCleared)
+	    {
+	        return;
+	    }
 	    runtime->FunctionCacheStore(env, handle->AsLong(), handler);
         runtime->TypeGetterCacheStore(env, handle->AsLong(), typeGetter);
         runtime->EqualityCheckerCacheStore(env, handle->AsLong(), equalityChecker);
 	}
 
-    inline jobject callbackFromCache()
+    inline auto callbackFromCache() const -> jobject
     {
-        if (alreadyCleared) throw std::runtime_error("FunctionCallbackData already cleared!");
+        if (alreadyCleared)
+        {
+            throw std::runtime_error("FunctionCallbackData already cleared!");
+        }
         return runtime->FunctionCacheGet(env, handle->AsLong());
     }
 
-    inline jobject typeGetterFromCache()
+    inline auto typeGetterFromCache() const -> jobject
     {
-        if (alreadyCleared) throw std::runtime_error("FunctionCallbackData already cleared!");
+        if (alreadyCleared)
+        {
+            throw std::runtime_error("FunctionCallbackData already cleared!");
+        }
         return runtime->TypeGetterCacheGet(env, handle->AsLong());
     }
 
-    inline jobject equalityCheckerFromCache()
+    inline auto equalityCheckerFromCache() const -> jobject
     {
-        if (alreadyCleared) throw std::runtime_error("FunctionCallbackData already cleared!");
+        if (alreadyCleared)
+        {
+            throw std::runtime_error("FunctionCallbackData already cleared!");
+        }
         return runtime->EqualityCheckerCacheGet(env, handle->AsLong());
     }
 };
@@ -85,30 +103,39 @@ public:
 
 	void clearReference()
 	{
-	    if (alreadyCleared) return;
+	    if (alreadyCleared)
+	    {
+	        return;
+	    }
 	    runtime->ExternalCacheDelete(env, handle->AsLong());
 	    handle->Reset();
 
         alreadyCleared = true;
 	}
 
-	inline void storeInCache(jobject external)
+	inline void storeInCache(jobject external) const
 	{
-	    if (alreadyCleared) return;
+	    if (alreadyCleared)
+	    {
+	        return;
+	    }
 	    runtime->ExternalCacheStore(env, handle->AsLong(), external);
 	}
 
-    inline jobject externalFromCache()
+    inline auto externalFromCache() const -> jobject
     {
-        if (alreadyCleared) throw std::runtime_error("ExternalData already cleared!");
+        if (alreadyCleared)
+        {
+            throw std::runtime_error("ExternalData already cleared!");
+        }
         return runtime->ExternalCacheGet(env, handle->AsLong());
     }
 };
 
 extern "C"
 {
-	JNIEXPORT jint JNICALL
-	JNI_OnLoad(JavaVM* vm, void* reserved)
+	JNIEXPORT auto JNICALL
+	JNI_OnLoad(JavaVM* vm, void* reserved) -> jint
 	{
 		JNIEnv* env;
 		jint onLoad_err = -1;
@@ -132,36 +159,36 @@ extern "C"
 	}
 
     JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_setFlags(JNIEnv* env, jobject thiz, jstring flags)
+	JPF(setFlags)(JNIEnv* env, jobject thiz, jstring flags)
 	{
-	    const char* flagString = env->GetStringUTFChars(flags, 0);
+	    const char* flagString = env->GetStringUTFChars(flags, JNI_FALSE);
         Runtime::environment->SetFlags(flagString);
         env->ReleaseStringUTFChars(flags, flagString);
 	}
 
-	JNIEXPORT jlong JNICALL
-	Java_jjbridge_v8_V8_createRuntime(JNIEnv* env, jobject thiz, jobject referenceMonitor, jobject functionCache,
-	    jobject typeGetterCache, jobject equalityCheckerCache, jobject externalCache)
+	JNIEXPORT auto JNICALL
+	JPF(createRuntime)(JNIEnv* env, jobject thiz, jobject referenceMonitor, jobject functionCache,
+	    jobject typeGetterCache, jobject equalityCheckerCache, jobject externalCache) -> jlong
 	{
 		return (new Runtime(env, referenceMonitor, functionCache, typeGetterCache, equalityCheckerCache, externalCache))->getHandle();
 	}
 
-	JNIEXPORT jboolean JNICALL
-	Java_jjbridge_v8_V8_releaseRuntime(JNIEnv* env, jobject thiz, jlong runtimeHandle)
+	JNIEXPORT auto JNICALL
+	JPF(releaseRuntime)(JNIEnv* env, jobject thiz, jlong runtimeHandle) -> jboolean
 	{
-		return Runtime::safeRelease(env, runtimeHandle);
+		return static_cast<jboolean>(Runtime::safeRelease(env, runtimeHandle));
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_releaseReference(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(releaseReference)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
-		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
+		Runtime::safeCast(env, runtimeHandle);
 		Handle::Release(Handle::FromLong(referenceHandle));
 	}
 
-	JNIEXPORT jobject JNICALL
-    Java_jjbridge_v8_V8_globalObjectReference(JNIEnv* env, jobject thiz, jlong runtimeHandle, jobject typeGetter,
-        jobject equalityChecker)
+	JNIEXPORT auto JNICALL
+    JPF(globalObjectReference)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jobject typeGetter,
+        jobject equalityChecker) -> jobject
     {
     	Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
     	newLocalContext(runtime, context)
@@ -169,9 +196,9 @@ extern "C"
     	return runtime->NewReference(env, global, typeGetter, equalityChecker);
     }
 
-	JNIEXPORT jobject JNICALL
-	Java_jjbridge_v8_V8_executeScript(JNIEnv* env, jobject thiz, jlong runtimeHandle, jstring fileName, jstring sourceCode,
-	    jobject typeGetter, jobject equalityChecker)
+	JNIEXPORT auto JNICALL
+	JPF(executeScript)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jstring fileName, jstring sourceCode,
+	    jobject typeGetter, jobject equalityChecker) -> jobject
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -187,32 +214,35 @@ extern "C"
 		return runtime->NewReference(env, result, typeGetter, equalityChecker);
 	}
 
-	JNIEXPORT jobject JNICALL
-	Java_jjbridge_v8_V8_getReferenceType(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JNIEXPORT auto JNICALL
+	JPF(getReferenceType)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle) -> jobject
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		return runtime->getReferenceType(env, Handle::FromLong(referenceHandle));
 	}
 
-	JNIEXPORT jobject JNICALL
-	Java_jjbridge_v8_V8_newValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jobject type, jobject typeGetter,
-	    jobject equalityChecker)
+	JNIEXPORT auto JNICALL
+	JPF(newValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jobject type, jobject typeGetter,
+	    jobject equalityChecker) -> jobject
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		return runtime->NewReference(env, new Handle(runtime->isolate), type, typeGetter, equalityChecker);
 	}
 
-    JNIEXPORT jboolean JNICALL
-	Java_jjbridge_v8_V8_equalsValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong aReferenceHandle, jlong bReferenceHandle)
+    JNIEXPORT auto JNICALL
+	JPF(equalsValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong firstReferenceHandle,
+	    jlong secondReferenceHandle) -> jboolean
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
-		return Handle::FromLong(aReferenceHandle) == Handle::FromLong(aReferenceHandle);
+		// TODO: Not working as expected in tests
+		//       Fix using local values comparison?
+		return static_cast<jboolean>(Handle::FromLong(firstReferenceHandle) == Handle::FromLong(secondReferenceHandle));
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_initUndefinedValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(initUndefinedValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -220,23 +250,24 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_initNullValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(initNullValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		Handle::FromLong(referenceHandle)->Set(v8::Null(runtime->isolate));
 	}
 
-	JNIEXPORT jboolean JNICALL
-	Java_jjbridge_v8_V8_getBooleanValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JNIEXPORT auto JNICALL
+	JPF(getBooleanValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle) -> jboolean
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
-		return (Handle::FromLong(referenceHandle)->GetLocal<v8::Value>()->ToBoolean(context->GetIsolate()))->Value();
+		return static_cast<jboolean>((Handle::FromLong(referenceHandle)->GetLocal<v8::Value>()
+		    ->ToBoolean(context->GetIsolate()))->Value());
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_setBooleanValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jboolean value)
+	JPF(setBooleanValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jboolean value)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -244,15 +275,15 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_initBooleanValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(initBooleanValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		Handle::FromLong(referenceHandle)->Set(v8::Boolean::New(runtime->isolate, false));
 	}
 
-	JNIEXPORT jint JNICALL
-	Java_jjbridge_v8_V8_getIntegerValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JNIEXPORT auto JNICALL
+	JPF(getIntegerValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle) -> jint
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -260,7 +291,7 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_setIntegerValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jint value)
+	JPF(setIntegerValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jint value)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -268,15 +299,15 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_initIntegerValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(initIntegerValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		Handle::FromLong(referenceHandle)->Set(v8::Int32::New(runtime->isolate, 0));
 	}
 
-	JNIEXPORT jdouble JNICALL
-	Java_jjbridge_v8_V8_getDoubleValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JNIEXPORT auto JNICALL
+	JPF(getDoubleValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle) -> jdouble
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -284,7 +315,7 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_setDoubleValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jdouble value)
+	JPF(setDoubleValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jdouble value)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -292,24 +323,25 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_initDoubleValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(initDoubleValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		Handle::FromLong(referenceHandle)->Set(v8::Number::New(runtime->isolate, 0.0));
 	}
 
-	JNIEXPORT jstring JNICALL
-	Java_jjbridge_v8_V8_getStringValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JNIEXPORT auto JNICALL
+	JPF(getStringValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle) -> jstring
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
-		v8::String::Value unicodeString(runtime->isolate, (Handle::FromLong(referenceHandle)->GetLocal<v8::Value>()->ToString(context)).ToLocalChecked());
+		v8::String::Value unicodeString(runtime->isolate,
+		    (Handle::FromLong(referenceHandle)->GetLocal<v8::Value>()->ToString(context)).ToLocalChecked());
 		return env->NewString(*unicodeString, unicodeString.length());
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_setStringValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jstring value)
+	JPF(setStringValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jstring value)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -317,39 +349,39 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_initStringValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(initStringValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		Handle::FromLong(referenceHandle)->Set(v8::String::Empty(runtime->isolate));
 	}
 
-	JNIEXPORT jobject JNICALL
-	Java_jjbridge_v8_V8_getExternalValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JNIEXPORT auto JNICALL
+	JPF(getExternalValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle) -> jobject
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		v8::Local<v8::External> external = Handle::FromLong(referenceHandle)->GetLocal<v8::External>();
-		ExternalData* data = (ExternalData*) external->Value();
+		auto* data = (ExternalData*) external->Value();
 		return data == nullptr ? nullptr : data->externalFromCache();
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_setExternalValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jobject value)
+	JPF(setExternalValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jobject value)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 
         Handle* handle = Handle::FromLong(referenceHandle);
 
-        ExternalData* oldExternalData = handle->GetFinalizerParameter<ExternalData>();
+        auto* oldExternalData = handle->GetFinalizerParameter<ExternalData>();
         if (oldExternalData != nullptr)
         {
             oldExternalData->clearReference();
             delete oldExternalData;
         }
 
-		ExternalData* externalData = new ExternalData(env, runtime, handle);
+		auto* externalData = new ExternalData(env, runtime, handle);
         externalData->storeInCache(value);
 
 		handle->Set(v8::External::New(runtime->isolate, externalData));
@@ -362,17 +394,17 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_initExternalValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(initExternalValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
-		ExternalData* externalData = new ExternalData(env, runtime, nullptr);
+		auto* externalData = new ExternalData(env, runtime, nullptr);
 		Handle::FromLong(referenceHandle)->Set(v8::External::New(runtime->isolate, externalData));
 	}
 
-	JNIEXPORT jobject JNICALL
-	Java_jjbridge_v8_V8_getObjectProperty(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle,
-	    jstring property, jobject typeGetter, jobject equalityChecker)
+	JNIEXPORT auto JNICALL
+	JPF(getObjectProperty)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle,
+	    jstring property, jobject typeGetter, jobject equalityChecker) -> jobject
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -384,7 +416,7 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_setObjectProperty(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle,
+	JPF(setObjectProperty)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle,
 	    jstring property, jlong valueHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
@@ -397,34 +429,36 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_initObjectValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(initObjectValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		Handle::FromLong(referenceHandle)->Set(v8::Object::New(runtime->isolate));
 	}
 
-	JNIEXPORT jstring JNICALL
-	Java_jjbridge_v8_V8_getDateTimeString(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JNIEXPORT auto JNICALL
+	JPF(getDateTimeString)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle) -> jstring
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		v8::Local<v8::Object> object = Handle::FromLong(referenceHandle)->GetLocal<v8::Object>();
 
-		v8::Function* function = v8::Function::Cast(*(object->Get(context, v8::String::NewFromUtf8Literal(runtime->isolate, "toISOString")).ToLocalChecked()));
+		v8::Function* function = v8::Function::Cast(*(object->Get(context,
+		    v8::String::NewFromUtf8Literal(runtime->isolate, "toISOString")).ToLocalChecked()));
 		v8::Local<v8::Value> dateTime = (function->Call(context, object, 0, nullptr)).ToLocalChecked();
 		v8::String::Value unicodeString(runtime->isolate, (dateTime->ToString(context)).ToLocalChecked());
 		return env->NewString(*unicodeString, unicodeString.length());
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_setDateTime(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jstring dateTime)
+	JPF(setDateTime)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jstring dateTime)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		v8::Local<v8::Object> global = context->Global();
 
-		v8::Function* dateConstructor = v8::Function::Cast(*(global->Get(context, v8::String::NewFromUtf8Literal(runtime->isolate, "Date"))).ToLocalChecked());
+		v8::Function* dateConstructor = v8::Function::Cast(*(global->Get(context,
+		    v8::String::NewFromUtf8Literal(runtime->isolate, "Date"))).ToLocalChecked());
 		const int argc = 1;
 		v8::Local<v8::Value> argv[argc] = { runtime->createV8String(env, dateTime) };
 		v8::Local<v8::Date> dateObj = v8::Local<v8::Date>::Cast((dateConstructor->NewInstance(context, argc, argv)).ToLocalChecked());
@@ -433,16 +467,16 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_initDateTimeValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(initDateTimeValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		Handle::FromLong(referenceHandle)->Set(v8::Date::New(context, 0.0).ToLocalChecked());
 	}
 
-	JNIEXPORT jobject JNICALL
-	Java_jjbridge_v8_V8_invokeFunction(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong functionHandle,
-	    jlong receiverHandle, jlongArray argHandles, jobject typeGetter, jobject equalityChecker)
+	JNIEXPORT auto JNICALL
+	JPF(invokeFunction)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong functionHandle, jlong receiverHandle,
+	    jlongArray argHandles, jobject typeGetter, jobject equalityChecker) -> jobject
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -451,7 +485,7 @@ extern "C"
 		v8::Local<v8::Value> arguments[argCount];
         if (argCount > 0)
 		{
-			jlong* argHandleArray = env->GetLongArrayElements(argHandles, 0);
+			jlong* argHandleArray = env->GetLongArrayElements(argHandles, JNI_FALSE);
             for (int i = 0; i < argCount; ++i)
             {
             	arguments[i] = Handle::FromLong(argHandleArray[i])->GetLocal<v8::Value>();
@@ -479,9 +513,9 @@ extern "C"
 		return runtime->NewReference(env, maybeValue.ToLocalChecked(), typeGetter, equalityChecker);
 	}
 
-	JNIEXPORT jobject JNICALL
-	Java_jjbridge_v8_V8_invokeConstructor(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong functionHandle,
-	    jlongArray argHandles, jobject typeGetter, jobject equalityChecker)
+	JNIEXPORT auto JNICALL
+	JPF(invokeConstructor)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong functionHandle, jlongArray argHandles,
+	    jobject typeGetter, jobject equalityChecker) -> jobject
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -490,7 +524,7 @@ extern "C"
 		v8::Local<v8::Value> arguments[argCount];
         if (argCount > 0)
 		{
-			jlong* argHandleArray = env->GetLongArrayElements(argHandles, 0);
+			jlong* argHandleArray = env->GetLongArrayElements(argHandles, JNI_FALSE);
             for (int i = 0; i < argCount; ++i)
             {
             	arguments[i] = Handle::FromLong(argHandleArray[i])->GetLocal<v8::Value>();
@@ -518,21 +552,21 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_setFunctionHandler(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle,
-	    jobject handler, jobject typeGetter, jobject equalityChecker)
+	JPF(setFunctionHandler)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jobject handler,
+	    jobject typeGetter, jobject equalityChecker)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 
         Handle* handle = Handle::FromLong(referenceHandle);
-        FunctionCallbackData* oldCallbackData = handle->GetFinalizerParameter<FunctionCallbackData>();
+        auto* oldCallbackData = handle->GetFinalizerParameter<FunctionCallbackData>();
         if (oldCallbackData != nullptr)
         {
             oldCallbackData->clearReference();
             delete oldCallbackData;
         }
 
-        FunctionCallbackData* callbackData = new FunctionCallbackData(env, runtime, handle);
+        auto* callbackData = new FunctionCallbackData(env, runtime, handle);
         callbackData->storeInCache(handler, typeGetter, equalityChecker);
 		v8::Local<v8::External> additionalData = v8::External::New(runtime->isolate, callbackData);
 
@@ -540,7 +574,7 @@ extern "C"
 			[](const v8::FunctionCallbackInfo<v8::Value>& args)
 			{
 				v8::Local<v8::External> data = v8::Local<v8::External>::Cast(args.Data());
-				FunctionCallbackData* callbackData = static_cast<FunctionCallbackData*>(data->Value());
+				auto* callbackData = static_cast<FunctionCallbackData*>(data->Value());
 
 				JNIEnv* env = callbackData->env;
 				Runtime* runtime = callbackData->runtime;
@@ -560,7 +594,7 @@ extern "C"
 				arguments[0].l = varArguments;
 
 				jobject result = Runtime::environment->applyFunctionCallback(env, callback, arguments);
-				if (env->ExceptionCheck()) {
+				if (env->ExceptionCheck() == JNI_TRUE) {
 				    jthrowable exception = env->ExceptionOccurred();
 				    env->ExceptionClear();
                     runtime->throwJNIExceptionInJS(env, exception);
@@ -584,15 +618,16 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_initFunctionValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(initFunctionValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
-		Handle::FromLong(referenceHandle)->Set(v8::FunctionTemplate::New(runtime->isolate)->GetFunction(context).ToLocalChecked());
+		Handle::FromLong(referenceHandle)->Set(v8::FunctionTemplate::New(runtime->isolate)->GetFunction(context)
+		    .ToLocalChecked());
 	}
 
-	JNIEXPORT jint JNICALL
-	Java_jjbridge_v8_V8_getArraySize(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jint position)
+	JNIEXPORT auto JNICALL
+	JPF(getArraySize)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jint position) -> jint
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -601,9 +636,9 @@ extern "C"
 		return array->Length();
 	}
 
-	JNIEXPORT jobject JNICALL
-	Java_jjbridge_v8_V8_getElementByPosition(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle,
-	    jint position, jobject typeGetter, jobject equalityChecker)
+	JNIEXPORT auto JNICALL
+	JPF(getElementByPosition)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jint position,
+	    jobject typeGetter, jobject equalityChecker) -> jobject
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
@@ -614,7 +649,7 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_setElementByPosition(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle,
+	JPF(setElementByPosition)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle,
 	    jint position, jlong valueHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
@@ -626,33 +661,33 @@ extern "C"
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_initArrayValue(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+	JPF(initArrayValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
 		Handle::FromLong(referenceHandle)->Set(v8::Array::New(runtime->isolate));
 	}
 
-	JNIEXPORT jlong JNICALL
-	Java_jjbridge_v8_V8_initInspector(JNIEnv* env, jobject thiz, jlong runtimeHandle, jobject messageHandler)
+	JNIEXPORT auto JNICALL
+	JPF(initInspector)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jobject messageHandler) -> jlong
 	{
 	    Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
         newLocalContext(runtime, context)
 
-        InspectorClient* inspectorClient = new InspectorClient(env, messageHandler, runtime);
+        auto* inspectorClient = new InspectorClient(env, messageHandler, runtime);
         inspectorClient->createContext(context, u"JJBridge-V8 Main Context");
         return inspectorClient->getHandle();
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_closeInspector(JNIEnv* env, jobject thiz, jlong inspectorHandle)
+	JPF(closeInspector)(JNIEnv* env, jobject thiz, jlong inspectorHandle)
 	{
 	    InspectorClient* inspectorClient = InspectorClient::safeCast(env, inspectorHandle);
 	    InspectorClient::Release(env, inspectorClient);
 	}
 
 	JNIEXPORT void JNICALL
-	Java_jjbridge_v8_V8_onInspectorMessage(JNIEnv* env, jobject thiz, jlong inspectorHandle, jstring message)
+	JPF(onInspectorMessage)(JNIEnv* env, jobject thiz, jlong inspectorHandle, jstring message)
 	{
 	    InspectorClient* inspectorClient = InspectorClient::safeCast(env, inspectorHandle);
         inspectorClient->onMessageReceive(env, message);

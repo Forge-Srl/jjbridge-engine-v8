@@ -24,9 +24,9 @@ private:
 public:
 	Channel(std::function<void (const v8_inspector::StringView&)> sendCallback)
 	{
-	    send = sendCallback;
+	    send = std::move(sendCallback);
 	}
-	virtual ~Channel() = default;
+	~Channel() override = default;
 };
 
 #endif

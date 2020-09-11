@@ -90,20 +90,20 @@ void Environment::Release(JNIEnv* env, Environment* environment)
 	delete environment;
 }
 
-jobject Environment::getResultType(JNIEnv* env, const v8::Local<v8::Value> &result)
+auto Environment::getResultType(JNIEnv* env, const v8::Local<v8::Value> &result) const -> jobject
 {
 	if (result->IsUndefined()) { return jsTypeUndefined; }
-	else if (result->IsNull()) { return jsTypeNull; }
-	else if (result->IsBoolean()) { return jsTypeBoolean; }
-	else if (result->IsInt32()) { return jsTypeInteger; }
-	else if (result->IsNumber()) { return jsTypeDouble;	}
-	else if (result->IsString()) { return jsTypeString;	}
-	else if (result->IsExternal()) { return jsTypeExternal; }
-	else if (result->IsObject())
+	if (result->IsNull()) { return jsTypeNull; }
+	if (result->IsBoolean()) { return jsTypeBoolean; }
+	if (result->IsInt32()) { return jsTypeInteger; }
+	if (result->IsNumber()) { return jsTypeDouble;	}
+	if (result->IsString()) { return jsTypeString;	}
+	if (result->IsExternal()) { return jsTypeExternal; }
+	if (result->IsObject())
 	{
 		if (result->IsArray()) { return jsTypeArray; }
-		else if (result->IsDate()) { return jsTypeDate; }
-		else if (result->IsFunction()) { return jsTypeFunction; }
+		if (result->IsDate()) { return jsTypeDate; }
+		if (result->IsFunction()) { return jsTypeFunction; }
 
 		return jsTypeObject;
 	}

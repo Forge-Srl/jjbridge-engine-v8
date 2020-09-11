@@ -13,7 +13,7 @@ private:
     std::condition_variable condvar;
 
     typedef std::lock_guard<std::mutex> lock;
-    typedef std::unique_lock<std::mutex> ulock;
+    using ulock = std::unique_lock<std::mutex>;
 
 public:
     void push(T const &val)
@@ -21,15 +21,20 @@ public:
         std::lock_guard<std::mutex> lock(mutex); // prevents multiple pushes corrupting queue_
         bool wake = queue.empty(); // we may need to wake consumer
         queue.push(val);
-        if (wake) condvar.notify_one();
+        if (wake)
+        {
+            condvar.notify_one();
+        }
     }
 
-    T pop()
+    auto pop() -> T
     {
         std::unique_lock<std::mutex> ulock(mutex);
 
         while (queue.empty())
+        {
             condvar.wait(ulock);
+        }
 
         // now queue is non-empty and we still have the lock
         T retval = queue.front();

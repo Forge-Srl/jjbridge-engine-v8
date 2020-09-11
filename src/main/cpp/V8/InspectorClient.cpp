@@ -22,7 +22,10 @@ InspectorClient::InspectorClient(JNIEnv* env, jobject handler, Runtime* runtime)
 
 void InspectorClient::runMessageLoopOnPause(int contextGroupId)
 {
-    if (runningNestedLoop) return;
+    if (runningNestedLoop)
+    {
+        return;
+    }
 
     terminated = false;
     runningNestedLoop = true;
@@ -49,14 +52,20 @@ void InspectorClient::send(const v8_inspector::StringView& string)
         ? v8::String::NewFromOneByte(runtime->isolate, string.characters8(), v8::NewStringType::kNormal, string.length())
         : v8::String::NewFromTwoByte(runtime->isolate, string.characters16(), v8::NewStringType::kNormal, string.length());
 
-    if (maybeString.IsEmpty()) return;
+    if (maybeString.IsEmpty())
+    {
+        return;
+    }
 
     v8::String::Value message(runtime->isolate, maybeString.ToLocalChecked());
 
     JNIEnv* env;
     int result = Runtime::environment->getCurrentThreadEnv(&env, JNI_VERSION);
     Runtime::environment->sendToInspector(env, messageHandler, *message, message.length());
-    if (result == 1) Runtime::environment->releaseCurrentThreadEnv();
+    if (result == 1)
+    {
+        Runtime::environment->releaseCurrentThreadEnv();
+    }
 }
 
 void InspectorClient::dispatchMessage(const v8_inspector::StringView& string)
@@ -65,7 +74,7 @@ void InspectorClient::dispatchMessage(const v8_inspector::StringView& string)
     session->dispatchProtocolMessage(string);
 }
 
-void InspectorClient::createContext(const v8::Local<v8::Context> context, std::u16string name)
+void InspectorClient::createContext(const v8::Local<v8::Context> context, const std::u16string &name)
 {
     v8_inspector::StringView contextName((uint16_t*) name.c_str(), name.length());
     inspector->contextCreated(v8_inspector::V8ContextInfo(context, contextGroupId, contextName));
@@ -89,7 +98,7 @@ void InspectorClient::onMessageReceive(JNIEnv* env, jstring message)
     }
 }
 
-InspectorClient* InspectorClient::safeCast(JNIEnv* env, jlong inspectorHandle)
+auto InspectorClient::safeCast(JNIEnv* env, jlong inspectorHandle) -> InspectorClient*
 {
    if (inspectorHandle == 0) {
       std::u16string error = u"Inspector handle is null.";

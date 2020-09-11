@@ -6,7 +6,7 @@
 #include "Environment.h"
 #include "Handle.h"
 
-std::u16string getMessage(v8::Local<v8::Context> context, v8::TryCatch* tryCatch)
+auto getMessage(v8::Local<v8::Context> context, v8::TryCatch* tryCatch) -> std::u16string
 {
     v8::MaybeLocal<v8::Value> stack = tryCatch->StackTrace(context);
     v8::Local<v8::String> message;
@@ -37,7 +37,7 @@ Runtime::Runtime(JNIEnv* env, jobject referenceMonitor, jobject functionCache, j
 	context.Reset(isolate, ctx);
 }
 
-v8::Local<v8::String> Runtime::createV8String(JNIEnv* env, jstring &string) const
+auto Runtime::createV8String(JNIEnv* env, jstring &string) const -> v8::Local<v8::String>
 {
 	const uint16_t* unicodeString = env->GetStringChars(string, nullptr);
 	int length = env->GetStringLength(string);
@@ -46,7 +46,8 @@ v8::Local<v8::String> Runtime::createV8String(JNIEnv* env, jstring &string) cons
 	return result;
 }
 
-bool Runtime::compileScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v8::String> fileName, v8::Local<v8::String> source, v8::Local<v8::Script> &script)
+auto Runtime::compileScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v8::String> fileName,
+    v8::Local<v8::String> source, v8::Local<v8::Script> &script) const -> bool
 {
 	v8::TryCatch tryCatch(isolate);
 
@@ -57,7 +58,7 @@ bool Runtime::compileScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Loc
     v8::Local<v8::Integer> scriptId = v8::Integer::New(isolate, ScriptIdCounter++);
     v8::Local<v8::String> originUrl = v8::String::Concat(isolate, v8::String::NewFromUtf8Literal(isolate, "file://"), fileName);
 
-	v8::ScriptOrigin* origin = new v8::ScriptOrigin(fileName, originRow, originCol, cors, scriptId, originUrl);
+	auto* origin = new v8::ScriptOrigin(fileName, originRow, originCol, cors, scriptId, originUrl);
 	v8::MaybeLocal<v8::Script> maybeScript = v8::Script::Compile(context, source, origin);
 
     if (tryCatch.HasCaught())
@@ -78,7 +79,8 @@ bool Runtime::compileScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Loc
 	return true;
 }
 
-bool Runtime::runScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v8::Script> script, v8::Local<v8::Value> &result)
+auto Runtime::runScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v8::Script> script,
+    v8::Local<v8::Value> &result) -> bool
 {
 	v8::TryCatch tryCatch(isolate);
 	v8::MaybeLocal<v8::Value> maybeResult = script->Run(context);
@@ -99,11 +101,11 @@ bool Runtime::runScript(JNIEnv* env, v8::Local<v8::Context> context, v8::Local<v
 	return true;
 }
 
-void Runtime::throwJNIExceptionInJS(JNIEnv* env, jthrowable throwable)
+void Runtime::throwJNIExceptionInJS(JNIEnv* env, jthrowable throwable) const
 {
     jclass clazz = env->GetObjectClass(throwable);
     jmethodID getMessage = env->GetMethodID(clazz, "toString", "()Ljava/lang/String;");
-    jstring message = (jstring) env->CallObjectMethod(throwable, getMessage);
+    auto* message = (jstring) env->CallObjectMethod(throwable, getMessage);
 
     v8::Local<v8::String> jsMessage = createV8String(env, message);
     jsMessage = v8::String::Concat(isolate, v8::String::NewFromUtf8Literal(isolate, "java exception in callback ["), jsMessage);
@@ -117,7 +119,7 @@ void Runtime::throwJNIExceptionInJS(JNIEnv* env, jthrowable throwable)
 	isolate->ThrowException(exception);
 }
 
-void Runtime::throwExecutionException(JNIEnv* env, v8::Local<v8::Context> context, v8::TryCatch* tryCatch)
+void Runtime::throwExecutionException(JNIEnv* env, v8::Local<v8::Context> context, v8::TryCatch* tryCatch) const
 {
     std::u16string message = getMessage(context, tryCatch);
     v8::MaybeLocal<v8::Value> inner = v8::Local<v8::Object>::Cast(tryCatch->Exception())
@@ -134,12 +136,12 @@ void Runtime::throwExecutionException(JNIEnv* env, v8::Local<v8::Context> contex
     }
 }
 
-void Runtime::throwExecutionException(JNIEnv* env, std::u16string message)
+void Runtime::throwExecutionException(JNIEnv* env, const std::u16string &message)
 {
     environment->throwExecutionException(env, (jchar*) message.c_str(), message.length());
 }
 
-Runtime* Runtime::safeCast(JNIEnv* env, jlong runtimeHandle)
+auto Runtime::safeCast(JNIEnv* env, jlong runtimeHandle) -> Runtime*
 {
 	if (runtimeHandle == 0) {
 	    std::u16string error = u"Runtime handle is null.";
@@ -149,11 +151,14 @@ Runtime* Runtime::safeCast(JNIEnv* env, jlong runtimeHandle)
 	return reinterpret_cast<Runtime*>(runtimeHandle);
 }
 
-bool Runtime::safeRelease(JNIEnv* env, jlong runtimeHandle)
+auto Runtime::safeRelease(JNIEnv* env, jlong runtimeHandle) -> bool
 {
-	if (runtimeHandle == 0) { return true; }
+	if (runtimeHandle == 0)
+	{
+	    return true;
+	}
 
-	Runtime* runtime = reinterpret_cast<Runtime*>(runtimeHandle);
+	auto* runtime = reinterpret_cast<Runtime*>(runtimeHandle);
 	runtime->isolate->LowMemoryNotification(); //Forces garbage collection before dispose
 	env->DeleteGlobalRef(runtime->referenceMonitor);
 
