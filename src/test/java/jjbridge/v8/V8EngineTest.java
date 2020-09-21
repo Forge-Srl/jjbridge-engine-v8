@@ -1,16 +1,18 @@
 package jjbridge.v8;
 
+import jjbridge.common.inspector.JSInspector;
 import jjbridge.v8.inspector.Inspector;
 import jjbridge.v8.runtime.Runtime;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class V8EngineTest {
     private V8Engine engine;
 
-    @Before
+    @BeforeEach
     public final void before() {
         engine = new V8Engine();
     }
@@ -22,6 +24,8 @@ public class V8EngineTest {
 
     @Test
     public void newInspector() {
-        assertTrue(engine.newInspector(1000) instanceof Inspector);
+        JSInspector jsInspector = engine.newInspector(1000);
+        assertTrue(jsInspector instanceof Inspector);
+        assertEquals(1000, ((Inspector) jsInspector).getPort());
     }
 }

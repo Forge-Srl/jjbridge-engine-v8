@@ -1,20 +1,20 @@
 package jjbridge.utils;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class CacheTest {
     private Cache<Object> cache;
 
-    private Object object1 = new Object();
-    private Object object2 = new Object();
-    private Object object3 = new Object();
-    private Object object4 = new Object();
+    private final Object object1 = new Object();
+    private final Object object2 = new Object();
+    private final Object object3 = new Object();
+    private final Object object4 = new Object();
 
-    @Before
+    @BeforeEach
     public void before() {
         cache = new Cache<>();
     }
@@ -48,14 +48,14 @@ public class CacheTest {
         assertNull(cache.get(handle1));
         assertNull(cache.get(handle2));
         assertNull(cache.get(handle3));
-        assertNull(cache.get(handle4));
         cache.store(handle1, object1);
         cache.store(handle2, object2);
-        cache.store(handle3, object3);
-        cache.store(handle4, object4);
         assertEquals(object1, cache.get(handle1));
         assertEquals(object2, cache.get(handle2));
+        cache.store(handle3, object3);
         assertEquals(object3, cache.get(handle3));
+        assertNull(cache.get(handle4));
+        cache.store(handle4, object4);
         assertEquals(object4, cache.get(handle4));
 
         cache.clear();

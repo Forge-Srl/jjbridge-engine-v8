@@ -1,18 +1,21 @@
 package jjbridge.v8.inspector;
 
 import jjbridge.v8.V8;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class V8MessageHandlerTest {
-    private V8 v8;
+    @Mock private V8 v8;
     private V8MessageHandler messageHandler;
 
-    @Before
+    @BeforeEach
     public final void before() {
-        v8 = mock(V8.class);
         messageHandler = new V8MessageHandler(null, v8);
     }
 

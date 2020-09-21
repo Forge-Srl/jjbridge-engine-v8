@@ -1,11 +1,11 @@
 package jjbridge.v8.runtime;
 
 import jjbridge.common.value.JSType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class ReferenceTest {
     private Reference reference;
@@ -14,7 +14,7 @@ public class ReferenceTest {
     private EqualityChecker equalityChecker;
     private int handle;
 
-    @Before
+    @BeforeEach
     public void before() {
         handle = 1;
         jsType = JSType.Null;

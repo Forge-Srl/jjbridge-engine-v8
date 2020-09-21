@@ -1,24 +1,23 @@
 package jjbridge.utils;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 public class NativeReferenceTest {
+    private static final long id = 123;
     private NativeReference<Object> reference;
-    private long id;
-    private Object object;
-    private CleanUpAction action;
+    @Mock private CleanUpAction action;
 
-    @Before
+    @BeforeEach
     public void before() {
-        id = 123;
-        object = new Object();
-        action = mock(CleanUpAction.class);
-        reference = new NativeReference<>(id, object, null, action);
+        reference = new NativeReference<>(id, new Object(), null, action);
     }
 
     @Test

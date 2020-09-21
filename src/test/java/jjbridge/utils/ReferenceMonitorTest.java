@@ -1,20 +1,22 @@
 package jjbridge.utils;
 
-import org.junit.Before;
-import org.junit.Test;
+import jjbridge.MemoryTimeWaster;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ReferenceMonitorTest {
     private ReferenceMonitor<Object> referenceMonitor;
 
-    @Before
+    @BeforeEach
     public void before() {
         referenceMonitor = new ReferenceMonitor<>(50);
     }
 
     @Test
-    public void run() {
+    public void runAndTrackReferences() {
         referenceMonitor.start();
 
         boolean[] cleanUpDone = new boolean[100];
@@ -25,12 +27,12 @@ public class ReferenceMonitorTest {
         }
 
         System.gc();
-        loseTime(20000000);
+        MemoryTimeWaster.waste(20000000);
         System.gc();
 
         for (int i = 0; i < cleanUpDone.length; i++)
         {
-            assertTrue("Clean up " + i, cleanUpDone[i]);
+            assertTrue(cleanUpDone[i], "Clean up " + i);
         }
 
         referenceMonitor.interrupt();
@@ -41,13 +43,5 @@ public class ReferenceMonitorTest {
             e.printStackTrace();
             fail();
         }
-    }
-
-    private static void loseTime(long n) {
-        StringBuffer buff = new StringBuffer();
-        for (long i = 0; i < n; i++) {
-            buff.append('a');
-        }
-        String t = buff.toString();
     }
 }

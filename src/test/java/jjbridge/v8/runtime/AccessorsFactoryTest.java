@@ -3,27 +3,30 @@ package jjbridge.v8.runtime;
 import jjbridge.common.value.JSType;
 import jjbridge.common.value.strategy.*;
 import jjbridge.v8.V8;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class AccessorsFactoryTest {
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
-    private V8 v8;
+    @Mock private V8 v8;
     private static final long runtimeHandle = 120;
     private static final long referenceHandle = 5;
     private AccessorsFactory factory;
 
-    @Before
+    @BeforeEach
     public void before() {
-        v8 = mock(V8.class);
         factory = new AccessorsFactory(v8, runtimeHandle);
     }
 
@@ -186,7 +189,7 @@ public class AccessorsFactoryTest {
             new Reference(10000000, JSType.Null, factory.referenceTypeGetter(), factory.equalityChecker()),
         };
 
-        long[] argHandles = new long[5];
+        long[] argHandles = new long[args.length];
         for (int i = 0; i < args.length; i++) {
             argHandles[i] = args[i].handle;
         }
@@ -196,7 +199,7 @@ public class AccessorsFactoryTest {
         when(v8.invokeFunction(runtimeHandle, referenceHandle, receiver.handle, argHandles, factory.referenceTypeGetter(), factory.equalityChecker())).thenReturn(null);
         assertNull(getter.invokeFunction(receiver, args));
         when(v8.invokeConstructor(runtimeHandle, referenceHandle, argHandles, factory.referenceTypeGetter(), factory.equalityChecker())).thenReturn(null);
-        assertNull(getter.invokeFunction(receiver, args));
+        assertNull(getter.invokeConstructor(args));
     }
 
     @Test

@@ -236,9 +236,9 @@ extern "C"
 	{
 		Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
 		newLocalContext(runtime, context)
-		// TODO: Not working as expected in tests
-		//       Fix using local values comparison?
-		return static_cast<jboolean>(Handle::FromLong(firstReferenceHandle) == Handle::FromLong(secondReferenceHandle));
+		v8::Local<v8::Value> first = Handle::FromLong(firstReferenceHandle)->GetLocal<v8::Value>();
+		v8::Local<v8::Value> second = Handle::FromLong(secondReferenceHandle)->GetLocal<v8::Value>();
+		return static_cast<jboolean>(first->StrictEquals(second));
 	}
 
 	JNIEXPORT void JNICALL

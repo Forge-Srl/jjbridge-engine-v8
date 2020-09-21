@@ -7,36 +7,34 @@ import jjbridge.utils.ReferenceMonitor;
 import jjbridge.v8.runtime.EqualityChecker;
 import jjbridge.v8.runtime.Reference;
 import jjbridge.v8.runtime.ReferenceTypeGetter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class V8Test {
-    private V8 v8;
     private long runtimeHandle;
-    private ReferenceMonitor<Reference> referenceMonitor;
-    private Cache<FunctionCallback<Reference>> functionCache;
-    private Cache<ReferenceTypeGetter> typeGetterCache;
-    private Cache<EqualityChecker> equalityCheckerCache;
-    private Cache<Object> externalCache;
 
-    @Before
+    @Spy private V8 v8;
+    @Spy private ReferenceMonitor<Reference> referenceMonitor = new ReferenceMonitor<>(50);
+    @Spy private Cache<FunctionCallback<Reference>> functionCache;
+    @Spy private Cache<ReferenceTypeGetter> typeGetterCache;
+    @Spy private Cache<EqualityChecker> equalityCheckerCache;
+    @Spy private Cache<Object> externalCache;
+
+    @BeforeEach
     public void before() {
-        v8 = spy(V8.class);
-        referenceMonitor = spy(new ReferenceMonitor<>(50));
-        functionCache = spy(new Cache<>());
-        typeGetterCache = spy(new Cache<>());
-        equalityCheckerCache = spy(new Cache<>());
-        externalCache = spy(new Cache<>());
-
         runtimeHandle = v8.createRuntime(referenceMonitor, functionCache, typeGetterCache, equalityCheckerCache, externalCache);
         referenceMonitor.start();
     }
 
-    @After
+    @AfterEach
     public void after() {
         referenceMonitor.interrupt();
         v8.releaseRuntime(runtimeHandle);

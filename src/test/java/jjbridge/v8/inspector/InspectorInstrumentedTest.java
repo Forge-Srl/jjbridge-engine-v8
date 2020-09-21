@@ -7,25 +7,25 @@ import jjbridge.common.value.JSObject;
 import jjbridge.v8.V8Engine;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class InspectorInstrumentedTest {
     private JSRuntime runtime;
     private JSInspector inspector;
     private InspectorClient inspectorClient;
 
-    private class InspectorClient extends WebSocketClient {
-        private LinkedBlockingQueue<OnMessageExpectation> expectations;
+    private static class InspectorClient extends WebSocketClient {
+        private final LinkedBlockingQueue<OnMessageExpectation> expectations;
 
         InspectorClient(URI serverUri) {
             super(serverUri);
@@ -75,7 +75,7 @@ public class InspectorInstrumentedTest {
         void check(String response);
     }
 
-    @Before
+    @BeforeEach
     public final void before() throws URISyntaxException, InterruptedException {
         int port = 9088;
 
@@ -104,7 +104,7 @@ public class InspectorInstrumentedTest {
         t.join();
     }
 
-    @After
+    @AfterEach
     public final void after() throws Exception {
         // wait for all messages to be processed
         CountDownLatch latch = new CountDownLatch(1);
@@ -152,7 +152,6 @@ public class InspectorInstrumentedTest {
                 },
                 response -> assertEquals("{\"method\":\"Debugger.scriptParsed\",\"params\":{\"scriptId\":\"3\",\"url\":\"/script_0\",\"startLine\":0,\"startColumn\":0,\"endLine\":0,\"endColumn\":66,\"executionContextId\":1,\"hash\":\"2f160716878340dd7c1e0066bcd32d7a37d6431e\",\"isLiveEdit\":false,\"sourceMapURL\":\"file:///script_0\",\"hasSourceURL\":false,\"isModule\":false,\"length\":66,\"scriptLanguage\":\"JavaScript\"}}", response));
 
-        /// qui si blocca...
         waitBeforeScript.await();
         String scriptSource = "class AAA { str() { console.log('AAA'); return 1000 } }; new AAA()";
         JSReference script1 = runtime.executeScript(scriptSource);

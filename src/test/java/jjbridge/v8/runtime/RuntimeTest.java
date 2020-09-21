@@ -1,5 +1,6 @@
 package jjbridge.v8.runtime;
 
+import jjbridge.MemoryTimeWaster;
 import jjbridge.common.runtime.*;
 import jjbridge.common.value.*;
 import jjbridge.common.value.strategy.FunctionCallback;
@@ -9,22 +10,22 @@ import jjbridge.utils.NativeReference;
 import jjbridge.utils.ReferenceMonitor;
 import jjbridge.v8.V8;
 import jjbridge.v8.V8Engine;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.spy;
 
 public class RuntimeTest {
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     private V8Engine engine;
     
-    @Before
+    @BeforeEach
     public void before() {
         engine = new V8Engine();
     }
@@ -756,7 +757,7 @@ public class RuntimeTest {
                 ((JSInteger)runtime.resolveReference(ref)).setValue(i);
             }
 
-            loseTime(1000000);
+            MemoryTimeWaster.waste(1000000);
             System.gc();
             Thread.sleep(1500);
 
@@ -769,7 +770,7 @@ public class RuntimeTest {
         }
     }
 
-    protected class ReferenceMonitorForTest extends ReferenceMonitor<Reference> {
+    protected static class ReferenceMonitorForTest extends ReferenceMonitor<Reference> {
         public ReferenceMonitorForTest() {
             super(50);
         }
@@ -783,99 +784,5 @@ public class RuntimeTest {
             }
             super.clean(ref);
         }
-    }
-
-    @Test
-    @Ignore
-    public void memoryLeak_many_runtime() {
-        while (true) {
-            try(JSRuntime runtime = engine.newRuntime()) {
-                memoryLeakAction(runtime);
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail();
-            }
-            loseTime(1000000);
-        }
-    }
-
-    @Test
-    @Ignore
-    public void memoryLeak_single_runtime() {
-        boolean x = true;
-
-        try (JSRuntime runtime = engine.newRuntime())
-        {
-            while(x) {
-                memoryLeakAction(runtime);
-                loseTime(1000000);
-                System.gc();
-                Thread.sleep(1500);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
-    }
-
-    private void memoryLeakAction(JSRuntime runtime) {
-        final String stringToCheck = "some string to check";
-        final int numberToCheck = 9856214;
-
-        JSReference arg1 = runtime.newReference(JSType.Null);
-        JSReference arg2 = runtime.newReference(JSType.String);
-
-        JSString arg2String = runtime.resolveReference(arg2);
-        arg2String.setValue(stringToCheck);
-
-        JSReference functionRef = runtime.newReference(JSType.Function);
-        JSFunction function = runtime.resolveReference(functionRef);
-
-        boolean[] callbackResult = {false, false, false};
-        {
-            function.setFunction(arguments -> {
-                callbackResult[0] = true;
-                callbackResult[1] = arguments[0].getNominalType() == JSType.Null;
-                callbackResult[2] = ((JSString) runtime.resolveReference(arguments[1])).getValue().equals(stringToCheck);
-
-                JSReference reference = runtime.newReference(JSType.Integer);
-                ((JSInteger) runtime.resolveReference(reference)).setValue(numberToCheck);
-                return reference;
-            });
-        }
-
-        JSReference functionResult = function.invoke(functionRef, arg1, arg2);
-        assertTrue(callbackResult[0]);
-        assertTrue(callbackResult[1]);
-        assertTrue(callbackResult[2]);
-        assertEquals(numberToCheck, (int) ((JSInteger) runtime.resolveReference(functionResult)).getValue());
-
-        function.setFunction(arguments -> {
-            JSReference reference = runtime.newReference(JSType.Undefined);
-            for (int i = 0; i < 1000; i++) {
-                reference = runtime.newReference(JSType.Object);
-            }
-            return reference;
-        });
-        functionResult = function.invoke(functionRef);
-        assertTrue(runtime.resolveReference(functionResult) instanceof JSObject);
-
-        JSReference funRef = runtime.newReference(JSType.Function);
-        for (int i = 0; i < 1000; i++) {
-            JSFunction fun = runtime.resolveReference(functionRef);
-            fun.setFunction(arguments -> {
-                callbackResult[0] = false;
-                return runtime.newReference(JSType.Null);
-            });
-            fun.invoke(funRef);
-        }
-    }
-
-    private static void loseTime(long n) {
-        StringBuffer buff = new StringBuffer();
-        for (long i = 0; i < n; i++) {
-            buff.append('a');
-        }
-        String t = buff.toString();
     }
 }
