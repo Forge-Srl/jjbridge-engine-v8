@@ -84,7 +84,12 @@ else()
     endif()
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-unused-function -Wno-unused-variable -Wno-unused-result -O3 -fvisibility=hidden -fexceptions -ffunction-sections -fno-data-sections")
+if(JJB_TARGET_PLATFORM STREQUAL "Windows")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14 /Wall /O2")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-unused-function -Wno-unused-variable -Wno-unused-result -O3 -fvisibility=hidden -fexceptions -ffunction-sections -fno-data-sections")
+endif()
+
 if(JJB_TARGET_PLATFORM STREQUAL "Linux")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
 elseif(JJB_TARGET_PLATFORM STREQUAL "macOS")
@@ -168,6 +173,19 @@ elseif(JJB_TARGET_PLATFORM STREQUAL "Android")
     target_link_libraries(V8-wrapper v8 v8-base v8-platform cpp-shared zlib)
 
 elseif(JJB_TARGET_PLATFORM STREQUAL "Windows")
-    # TODO
+    # TODO: .dll.lib are missing... https://groups.google.com/g/v8-users/c/mmwWxpb64_I?pli=1
+    add_library(v8 SHARED IMPORTED)
+    set_target_properties(v8 PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/v8.dll
+                                        IMPORTED_IMPLIB ${V8_BINARIES}/v8.dll.lib)
+    add_library(v8-base SHARED IMPORTED)
+    set_target_properties(v8-base PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/v8_libbase.dll
+                                             IMPORTED_IMPLIB ${V8_BINARIES}/v8_libbase.dll.lib)
+    add_library(v8-platform SHARED IMPORTED)
+    set_target_properties(v8-platform PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/v8_libplatform.dll
+                                                 IMPORTED_IMPLIB ${V8_BINARIES}/v8_libplatform.dll.lib)
+    add_library(zlib SHARED IMPORTED)
+    set_target_properties(zlib PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/zlib.dll
+                                          IMPORTED_IMPLIB ${V8_BINARIES}/zlib.dll.lib)
 
+    target_link_libraries(V8-wrapper v8 v8-base v8-platform zlib)
 endif()

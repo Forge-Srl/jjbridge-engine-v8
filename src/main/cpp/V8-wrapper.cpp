@@ -482,7 +482,7 @@ extern "C"
 		newLocalContext(runtime, context)
 
 		jsize argCount = argHandles == nullptr ? 0 : env->GetArrayLength(argHandles);
-		v8::Local<v8::Value> arguments[argCount];
+		v8::Local<v8::Value>* arguments = new v8::Local<v8::Value>[argCount];
         if (argCount > 0)
 		{
 			jlong* argHandleArray = env->GetLongArrayElements(argHandles, JNI_FALSE);
@@ -521,7 +521,7 @@ extern "C"
 		newLocalContext(runtime, context)
 
 		jsize argCount = argHandles == nullptr ? 0 : env->GetArrayLength(argHandles);
-		v8::Local<v8::Value> arguments[argCount];
+		v8::Local<v8::Value>* arguments = new v8::Local<v8::Value>[argCount];
         if (argCount > 0)
 		{
 			jlong* argHandleArray = env->GetLongArrayElements(argHandles, JNI_FALSE);
