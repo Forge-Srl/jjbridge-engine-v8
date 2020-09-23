@@ -9,7 +9,7 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <dependencySets>
         <dependencySet>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>${file.separator}</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>
             <unpack>true</unpack>
             <scope>compile</scope>
@@ -20,8 +20,8 @@
     </dependencySets>
     <fileSets>
         <fileSet>
-            <outputDirectory>/jni</outputDirectory>
-            <directory>target/jni/linux/x86_64</directory>
+            <outputDirectory>${file.separator}jni</outputDirectory>
+            <directory>target${file.separator}jni${file.separator}linux${file.separator}x86_64</directory>
             <includes>
                 <include>**</include>
             </includes>

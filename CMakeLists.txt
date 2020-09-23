@@ -173,7 +173,6 @@ elseif(JJB_TARGET_PLATFORM STREQUAL "Android")
     target_link_libraries(V8-wrapper v8 v8-base v8-platform cpp-shared zlib)
 
 elseif(JJB_TARGET_PLATFORM STREQUAL "Windows")
-    # TODO: .dll.lib are missing... https://groups.google.com/g/v8-users/c/mmwWxpb64_I?pli=1
     add_library(v8 SHARED IMPORTED)
     set_target_properties(v8 PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/v8.dll
                                         IMPORTED_IMPLIB ${V8_BINARIES}/v8.dll.lib)

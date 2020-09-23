@@ -27,7 +27,7 @@
                 </os>
             </activation>
             <properties>
-                <script.toExecute>${project.basedir}/build_Windows.ps1</script.toExecute>
+                <script.toExecute>${project.basedir}${file.separator}build_Windows.ps1</script.toExecute>
                 <script.executor>powershell.exe</script.executor>
                 <jar.classifier>windows</jar.classifier>
             </properties>
@@ -41,7 +41,7 @@
                 </os>
             </activation>
             <properties>
-                <script.toExecute>${project.basedir}/build_Linux.sh</script.toExecute>
+                <script.toExecute>${project.basedir}${file.separator}build_Linux.sh</script.toExecute>
                 <script.executor>bash</script.executor>
                 <jar.classifier>linux</jar.classifier>
             </properties>
@@ -54,7 +54,7 @@
                 </os>
             </activation>
             <properties>
-                <script.toExecute>${project.basedir}/build_macOS.sh</script.toExecute>
+                <script.toExecute>${project.basedir}${file.separator}build_macOS.sh</script.toExecute>
                 <script.executor>zsh</script.executor>
                 <jar.classifier>macos</jar.classifier>
             </properties>
@@ -82,7 +82,7 @@
                                 <phase>compile</phase>
                                 <configuration>
                                     <executable>bash</executable>
-                                    <commandlineArgs>${project.basedir}/build_Android.sh</commandlineArgs>
+                                    <commandlineArgs>${project.basedir}${file.separator}build_Android.sh</commandlineArgs>
                                 </configuration>
                             </execution>
                         </executions>
@@ -102,8 +102,8 @@
                         <extensions>true</extensions>
                         <configuration>
                             <classifier>android</classifier>
-                            <nativeLibrariesDirectory>${project.basedir}/target/jni/android/</nativeLibrariesDirectory>
-                            <androidManifestFile>${project.basedir}/src/android/AndroidManifest.xml</androidManifestFile>
+                            <nativeLibrariesDirectory>${project.basedir}${file.separator}target${file.separator}jni${file.separator}android${file.separator}</nativeLibrariesDirectory>
+                            <androidManifestFile>${project.basedir}${file.separator}src${file.separator}android${file.separator}AndroidManifest.xml</androidManifestFile>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -117,7 +117,7 @@
                 </property>
             </activation>
             <properties>
-                <jniRelativePath>target/jni/${jar.classifier}/x86_64</jniRelativePath>
+                <jniRelativePath>target${file.separator}jni${file.separator}${jar.classifier}${file.separator}x86_64</jniRelativePath>
                 <packaging.type>jar</packaging.type>
             </properties>
             <build>
@@ -147,11 +147,12 @@
                         <version>3.0.0-M5</version>
                         <configuration>
                             <forkCount>1</forkCount>
-                            <reuseForks>true</reuseForks>
+                            <reuseForks>false</reuseForks>
                             <testFailureIgnore>false</testFailureIgnore>
-                            <argLine>-ea -Djava.library.path=${project.basedir}/${jniRelativePath}</argLine>
+                            <argLine>-ea -Djava.library.path=${project.basedir}${file.separator}${jniRelativePath}</argLine>
                             <environmentVariables>
-                                <LD_LIBRARY_PATH>${project.basedir}/${jniRelativePath}</LD_LIBRARY_PATH>
+                                <LD_LIBRARY_PATH>${project.basedir}${file.separator}${jniRelativePath}</LD_LIBRARY_PATH>
+                                <PATH>${env.PATH}${path.separator}${project.basedir}${file.separator}${jniRelativePath}</PATH>
                             </environmentVariables>
                         </configuration>
                     </plugin>
@@ -161,7 +162,7 @@
                         <version>3.2.0</version>
                         <configuration>
                             <descriptors>
-                                <descriptor>assembly-descriptors/${jar.classifier}-assembly-descriptor.xml</descriptor>
+                                <descriptor>assembly-descriptors${file.separator}${jar.classifier}-assembly-descriptor.xml</descriptor>
                             </descriptors>
                         </configuration>
                         <executions>

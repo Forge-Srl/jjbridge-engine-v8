@@ -12,14 +12,16 @@ If (Test-Path "jni\build\windows" -PathType Container) {
 New-Item -ItemType "directory" -Name "jni\build\windows"
 Set-Location "jni\build\windows"
 
-$srcPath = Resolve-Path '..\..\..\..' | select -ExpandProperty Path
+$srcPath = Resolve-Path '..\..\..\..' | Select-Object -ExpandProperty Path
 cmake $srcPath -DJJB_TARGET_PLATFORM=Windows
-
-$(cmake --build .) -and $({
+cmake --build . --config Release
+If ($?) {
     Set-Location ..\..
     New-Item -ItemType "directory" -Name "windows\x86_64"
 
-    Copy-Item "build\windows\V8-wrapper.dll" -Destination "windows\x86_64"
-    Copy-Item -Path "..\..\jni\v8\platforms\windows-x86_64\*" -Destination "windows\x86_64"
-})
+    Copy-Item "build\windows\Release\V8-wrapper.dll" -Destination "windows\x86_64"
+    Copy-Item "build\windows\Release\V8-wrapper.lib" -Destination "windows\x86_64"
+    Copy-Item "build\windows\Release\V8-wrapper.exp" -Destination "windows\x86_64"
+    Copy-Item -Path "..\..\jni\v8\platforms\windows-x86_64\*.dll" -Destination "windows\x86_64"
+}
 Set-Location $srcPath
