@@ -33,7 +33,7 @@ for arch in $architectures; do
   (
     cd "$arch" || exit
     cmake ../../../../.. -DJJB_TARGET_PLATFORM=Android -DANDROID_ABI="$arch" -DNDK_PATH="$ndk_path"
-    make && (
+    cmake --build . && (
       cd ../../..
       mkdir -p "android/$arch"
       cp "build/android/$arch/libV8-wrapper.so" "android/$arch"

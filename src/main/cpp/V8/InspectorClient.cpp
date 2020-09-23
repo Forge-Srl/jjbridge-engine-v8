@@ -13,9 +13,9 @@ InspectorClient::InspectorClient(JNIEnv* env, jobject handler, Runtime* runtime)
 , messageHandler(env->NewGlobalRef(handler))
 {
     inspector = v8_inspector::V8Inspector::create(runtime->isolate, this);
-    channel.reset(new Channel([this](const v8_inspector::StringView& string){
+    channel = std::make_unique<Channel>([this](const v8_inspector::StringView& string){
         send(string);
-    }));
+    });
     session = inspector->connect(contextGroupId, channel.get(), v8_inspector::StringView());
     messageQueue = new BlockingQueue<v8_inspector::StringView>();
 }

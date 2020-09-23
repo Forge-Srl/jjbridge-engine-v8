@@ -87,7 +87,7 @@ endif()
 if(JJB_TARGET_PLATFORM STREQUAL "Windows")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14 /Wall /O2")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-unused-function -Wno-unused-variable -Wno-unused-result -O3 -fvisibility=hidden -fexceptions -ffunction-sections -fno-data-sections")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wno-unused-function -Wno-unused-variable -Wno-unused-result -O3 -fvisibility=hidden -fexceptions -ffunction-sections -fno-data-sections")
 endif()
 
 if(JJB_TARGET_PLATFORM STREQUAL "Linux")

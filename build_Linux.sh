@@ -12,7 +12,7 @@ mkdir -p jni/build/linux
 cd jni/build/linux
 
 cmake ../../../.. -DJJB_TARGET_PLATFORM=Linux
-make && (
+cmake --build . && (
   cd ../..
   mkdir -p linux/x86_64
   cp build/linux/libV8-wrapper.so linux/x86_64

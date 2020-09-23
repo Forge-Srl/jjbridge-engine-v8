@@ -12,7 +12,7 @@ mkdir -p jni/build/macos
 cd jni/build/macos
 
 cmake ../../../.. -DJJB_TARGET_PLATFORM=macOS
-make && (
+cmake --build . && (
   cd ../..
   mkdir -p macos/x86_64
   cp build/macos/libV8-wrapper.dylib macos/x86_64
