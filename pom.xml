@@ -28,6 +28,7 @@
             </activation>
             <properties>
                 <script.toExecute>${project.basedir}${file.separator}build_Windows.ps1</script.toExecute>
+                <script.toExecuteAndroid>${project.basedir}${file.separator}build_Android.ps1</script.toExecuteAndroid>
                 <script.executor>powershell.exe</script.executor>
                 <jar.classifier>windows</jar.classifier>
             </properties>
@@ -42,6 +43,7 @@
             </activation>
             <properties>
                 <script.toExecute>${project.basedir}${file.separator}build_Linux.sh</script.toExecute>
+                <script.toExecuteAndroid>${project.basedir}${file.separator}build_Android.sh</script.toExecuteAndroid>
                 <script.executor>bash</script.executor>
                 <jar.classifier>linux</jar.classifier>
             </properties>
@@ -55,6 +57,7 @@
             </activation>
             <properties>
                 <script.toExecute>${project.basedir}${file.separator}build_macOS.sh</script.toExecute>
+                <script.toExecuteAndroid>${project.basedir}${file.separator}build_Android.sh</script.toExecuteAndroid>
                 <script.executor>zsh</script.executor>
                 <jar.classifier>macos</jar.classifier>
             </properties>
@@ -81,8 +84,8 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <executable>bash</executable>
-                                    <commandlineArgs>${project.basedir}${file.separator}build_Android.sh</commandlineArgs>
+                                    <executable>${script.executor}</executable>
+                                    <commandlineArgs>${script.toExecuteAndroid}</commandlineArgs>
                                 </configuration>
                             </execution>
                         </executions>
