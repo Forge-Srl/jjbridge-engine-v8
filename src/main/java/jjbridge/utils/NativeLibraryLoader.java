@@ -42,6 +42,8 @@ public class NativeLibraryLoader
                 throw new RuntimeException(e);
             }
 
+            String libraryName = System.mapLibraryName(libName);
+
             // On Windows we need to preload all .dll dependencies
             if (System.getProperty("os.name").toLowerCase(Locale.getDefault()).startsWith("win"))
             {
@@ -53,7 +55,7 @@ public class NativeLibraryLoader
                         files.map(Path::toFile)
                                 .filter(f -> !f.isDirectory()
                                         && f.getAbsolutePath().endsWith(".dll")
-                                        && !f.getAbsolutePath().endsWith(System.mapLibraryName(libName)))
+                                        && !f.getAbsolutePath().endsWith(libraryName))
                                 .forEach(f ->
                                 {
                                     try
@@ -65,7 +67,6 @@ public class NativeLibraryLoader
                                         // It's ok to fail here; will eventually fail later on final load.
                                     }
                                 });
-
                     }
                     catch (IOException e)
                     {
@@ -74,7 +75,7 @@ public class NativeLibraryLoader
                 }
             }
 
-            File library = new File(tempDir, System.mapLibraryName(libName));
+            File library = new File(tempDir, libraryName);
             try
             {
                 System.load(library.getAbsolutePath());
