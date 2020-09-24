@@ -9,10 +9,14 @@ import java.io.InputStream;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.ProviderNotFoundException;
 import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -36,6 +40,38 @@ public class NativeLibraryLoader
             catch (IOException e)
             {
                 throw new RuntimeException(e);
+            }
+
+            // On Windows we need to preload all .dll dependencies
+            if (System.getProperty("os.name").toLowerCase(Locale.getDefault()).startsWith("win"))
+            {
+                // Also we must repeat loading twice to resolve possible circular dependencies
+                for (int i = 0; i < 2; i++)
+                {
+                    try (Stream<Path> files = Files.walk(Paths.get(tempDir.getAbsolutePath())))
+                    {
+                        files.map(Path::toFile)
+                                .filter(f -> !f.isDirectory()
+                                        && f.getAbsolutePath().endsWith(".dll")
+                                        && !f.getAbsolutePath().endsWith(System.mapLibraryName(libName)))
+                                .forEach(f ->
+                                {
+                                    try
+                                    {
+                                        System.load(f.getAbsolutePath());
+                                    }
+                                    catch (Throwable e)
+                                    {
+                                        // It's ok to fail here; will eventually fail later on final load.
+                                    }
+                                });
+
+                    }
+                    catch (IOException e)
+                    {
+                        // It's ok to fail here; will eventually fail later on final load.
+                    }
+                }
             }
 
             File library = new File(tempDir, System.mapLibraryName(libName));
