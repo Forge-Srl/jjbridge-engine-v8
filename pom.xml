@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>jjbridge</groupId>
-    <artifactId>jjbridge-v8</artifactId>
+    <artifactId>jjbridge-engine-v8</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>${packaging.type}</packaging>
 
-    <name>JJBridge V8</name>
+    <name>JJBridge V8 Engine</name>
     <description>A JJBridge library bundled with V8 JavaScript Engine</description>
 
     <properties>
@@ -238,7 +238,7 @@
     <dependencies>
         <dependency>
             <groupId>jjbridge</groupId>
-            <artifactId>jjbridge-common</artifactId>
+            <artifactId>jjbridge-api</artifactId>
             <version>0.1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

@@ -8,7 +8,7 @@
 #include "V8/Handle.h"
 #include "V8/InspectorClient.h"
 
-#define JPF(methodName) Java_jjbridge_v8_V8_##methodName
+#define JPF(methodName) Java_jjbridge_engine_v8_V8_##methodName
 
 Environment* Runtime::environment = nullptr;
 
