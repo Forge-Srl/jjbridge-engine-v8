@@ -14,7 +14,7 @@
             <unpack>true</unpack>
             <scope>compile</scope>
             <includes>
-                <include>jjbridge:jjbridge-v8</include>
+                <include>jjbridge:jjbridge-engine-v8</include>
             </includes>
         </dependencySet>
     </dependencySets>
