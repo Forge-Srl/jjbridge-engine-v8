@@ -10,7 +10,13 @@
     <packaging>${packaging.type}</packaging>
 
     <name>JJBridge V8 Engine</name>
-    <description>A JJBridge library bundled with V8 JavaScript Engine</description>
+    <description>A JJBridge library bundled with the V8 JavaScript Engine</description>
+
+    <licenses>
+        <license>
+            <name>MIT</name>
+        </license>
+    </licenses>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -261,6 +267,11 @@
             <artifactId>spotbugs-annotations</artifactId>
             <version>4.1.2</version>
             <scope>provided</scope>
+            <!--
+            Setting as optional to bypass LGPL limitations.
+            See: https://github.com/spotbugs/discuss/issues/64#issuecomment-454634426
+            -->
+            <optional>true</optional>
         </dependency>
 
         <dependency>
