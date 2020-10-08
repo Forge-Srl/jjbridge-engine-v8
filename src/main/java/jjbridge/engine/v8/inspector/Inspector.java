@@ -2,10 +2,14 @@ package jjbridge.engine.v8.inspector;
 
 import jjbridge.api.inspector.Connection;
 import jjbridge.api.inspector.JSBaseInspector;
+import jjbridge.api.inspector.JSInspector;
 import jjbridge.api.inspector.MessageHandler;
 import jjbridge.engine.v8.V8;
 import jjbridge.engine.v8.runtime.Runtime;
 
+/**
+ * The implementation of the {@link JSInspector} using V8 inspector.
+ * */
 public class Inspector extends JSBaseInspector<Runtime>
 {
     private final V8 v8;

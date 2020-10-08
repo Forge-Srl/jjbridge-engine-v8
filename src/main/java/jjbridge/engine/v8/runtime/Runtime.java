@@ -2,6 +2,7 @@ package jjbridge.engine.v8.runtime;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jjbridge.api.runtime.JSBaseRuntime;
+import jjbridge.api.runtime.JSRuntime;
 import jjbridge.api.value.JSArray;
 import jjbridge.api.value.JSBoolean;
 import jjbridge.api.value.JSDate;
@@ -18,6 +19,9 @@ import jjbridge.api.value.JSValue;
 import jjbridge.engine.utils.ReferenceMonitor;
 import jjbridge.engine.v8.V8;
 
+/**
+ * The implementation of the {@link JSRuntime} using V8 runtime.
+ * */
 public class Runtime extends JSBaseRuntime<Reference>
 {
     private final V8 v8;
@@ -25,6 +29,7 @@ public class Runtime extends JSBaseRuntime<Reference>
     private final AccessorsFactory accessorsFactory;
     private final ReferenceMonitor<Reference> referenceMonitor;
 
+    @SuppressWarnings("checkstyle:MissingJavadocMethod")
     @SuppressFBWarnings(value = "SC_START_IN_CTOR",
             justification = "This class should be final but it is not due to mocking in tests")
     public Runtime(V8 v8, long runtimeHandle, ReferenceMonitor<Reference> referenceMonitor)

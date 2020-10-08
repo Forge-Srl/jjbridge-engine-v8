@@ -3,6 +3,9 @@ package jjbridge.engine.v8.runtime;
 import jjbridge.api.runtime.JSReference;
 import jjbridge.api.value.JSType;
 
+/**
+ * This implementation of {@link JSReference} holds a reference to a JavaScript value inside V8 engine memory.
+ * */
 public class Reference implements JSReference
 {
     public final long handle;

@@ -5,6 +5,7 @@ import jjbridge.engine.utils.NativeLibraryLoader;
 import jjbridge.engine.utils.ReferenceMonitor;
 import jjbridge.engine.v8.runtime.Reference;
 
+@SuppressWarnings("checkstyle:MissingJavadocType")
 public class V8
 {
     static

@@ -20,10 +20,25 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+/**
+ * Utility class to load native libraries.
+ * */
 public class NativeLibraryLoader
 {
     private static File tempDir;
 
+    /**
+     * Loads the given native library.
+     * <p>You should use this method much like {@link System#loadLibrary(String)}.</p>
+     * <p>This method performs additional attempts to load the library handling:</p>
+     * <ul>
+     *     <li>Whether the code is running from inside or outside a jar file.</li>
+     *     <li>Quirks of the operating systems in loading additional native libraries needed for the correct
+     *     execution.</li>
+     * </ul>
+     *
+     * @param libName the name of the library to load
+     * */
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public static void load(final String libName)
     {

@@ -12,9 +12,17 @@ import jjbridge.engine.v8.runtime.Reference;
 import jjbridge.engine.v8.runtime.ReferenceTypeGetter;
 import jjbridge.engine.v8.runtime.Runtime;
 
-public class V8Engine implements JSEngine
+/**
+ * The {@link JSEngine} implemented using <a href="https://v8.dev/">V8 JavaScript Engine</a>.
+ * */
+public final class V8Engine implements JSEngine
 {
-    public void setFlags(String[] flags)
+    /**
+     * Pass additional flags to V8 engine.
+     *
+     * @param flags the list of flags
+     * */
+    public static void setFlags(String[] flags)
     {
         StringBuilder sb = new StringBuilder();
         for (String flag : flags)
@@ -25,7 +33,7 @@ public class V8Engine implements JSEngine
     }
 
     @Override
-    public JSRuntime newRuntime()
+    public final JSRuntime newRuntime()
     {
         V8 v8 = V8.getInstance();
         ReferenceMonitor<Reference> referenceMonitor = new ReferenceMonitor<>(50);
@@ -35,7 +43,7 @@ public class V8Engine implements JSEngine
     }
 
     @Override
-    public JSInspector newInspector(int port)
+    public final JSInspector newInspector(int port)
     {
         return new Inspector(port, V8.getInstance());
     }
