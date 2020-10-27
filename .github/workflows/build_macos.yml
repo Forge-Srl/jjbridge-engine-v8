@@ -36,3 +36,4 @@ jobs:
             target/surefire/**
             *surefire*
             *jvmRun*
+            *hs_err*
