@@ -12,12 +12,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AccessorsFactoryTest {
+    static {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    }
+
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
     @Mock private V8 v8;
@@ -134,7 +139,7 @@ public class AccessorsFactoryTest {
         Date value = simpleDateFormat.parse("6403-04-14T05:58:33.197Z");
         ValueSetter<Date> setter = factory.dateSetter(referenceHandle);
         setter.setValue(value);
-        verify(v8).setDateTime(runtimeHandle, referenceHandle, "6403-04-14T07:58:33.197+02:00");
+        verify(v8).setDateTime(runtimeHandle, referenceHandle, "6403-04-14T05:58:33.197Z");
     }
 
     @Test
