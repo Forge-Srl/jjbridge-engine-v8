@@ -165,7 +165,17 @@ public class Runtime extends JSBaseRuntime<Reference>
         {
             return;
         }
+
         this.referenceMonitor.interrupt();
+        try
+        {
+            this.referenceMonitor.join();
+        }
+        catch (InterruptedException e)
+        {
+            // Ignored: we must release resources anyway
+        }
+
         if (this.v8.releaseRuntime(this.runtimeHandle))
         {
             super.close();
