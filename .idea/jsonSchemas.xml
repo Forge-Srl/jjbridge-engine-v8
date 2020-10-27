@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JsonSchemaMappingsProjectConfiguration">
+    <state>
+      <map>
+        <entry key="github-workflow">
+          <value>
+            <SchemaInfo>
+              <option name="name" value="github-workflow" />
+              <option name="relativePathToSchema" value="https://json.schemastore.org/github-workflow" />
+              <option name="applicationDefined" value="true" />
+              <option name="patterns">
+                <list>
+                  <Item>
+                    <option name="path" value=".github/workflows/build_android.yml" />
+                  </Item>
+                  <Item>
+                    <option name="path" value=".github/workflows/build_linux.yml" />
+                  </Item>
+                  <Item>
+                    <option name="path" value=".github/workflows/build_macos.yml" />
+                  </Item>
+                  <Item>
+                    <option name="path" value=".github/workflows/build_windows.yml" />
+                  </Item>
+                </list>
+              </option>
+            </SchemaInfo>
+          </value>
+        </entry>
+      </map>
+    </state>
+  </component>
+</project>
