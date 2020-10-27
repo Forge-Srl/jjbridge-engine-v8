@@ -25,4 +25,4 @@ jobs:
       - name: Build and test
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: mvn -B verify --file pom.xml -P Common,macOS
+        run: mvn -B verify --file pom.xml -P Common,macOS -DreuseForksInSurefire=false
