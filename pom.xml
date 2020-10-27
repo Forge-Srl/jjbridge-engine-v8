@@ -91,7 +91,7 @@
                 <script.toExecuteAndroid>${project.basedir}${file.separator}build_Android.sh</script.toExecuteAndroid>
                 <script.executor>zsh</script.executor>
                 <jar.classifier>macos</jar.classifier>
-                <reuseForksInSurefire>true</reuseForksInSurefire>
+                <reuseForksInSurefire>false</reuseForksInSurefire>
                 <useManifestOnlyJarInSurefire>false</useManifestOnlyJarInSurefire>
             </properties>
         </profile>
