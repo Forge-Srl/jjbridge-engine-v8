@@ -22,6 +22,12 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-android-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-android-m2
+      - name: Cache Android ndk
+        uses: actions/cache@v2
+        with:
+          path: tools/ndk
+          key: android-ndk-${{ hashFiles('**/build_Android.sh') }}
+          restore-keys: android-ndk
       - name: Build and test
         env:
           GITHUB_TOKEN: ${{ github.token }}
