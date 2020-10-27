@@ -59,6 +59,7 @@
                 <script.executor>powershell.exe</script.executor>
                 <jar.classifier>windows</jar.classifier>
                 <reuseForksInSurefire>false</reuseForksInSurefire>
+                <useManifestOnlyJarInSurefire>true</useManifestOnlyJarInSurefire>
             </properties>
         </profile>
         <profile>
@@ -75,6 +76,7 @@
                 <script.executor>bash</script.executor>
                 <jar.classifier>linux</jar.classifier>
                 <reuseForksInSurefire>false</reuseForksInSurefire>
+                <useManifestOnlyJarInSurefire>false</useManifestOnlyJarInSurefire>
             </properties>
         </profile>
         <profile>
@@ -90,6 +92,7 @@
                 <script.executor>zsh</script.executor>
                 <jar.classifier>macos</jar.classifier>
                 <reuseForksInSurefire>true</reuseForksInSurefire>
+                <useManifestOnlyJarInSurefire>false</useManifestOnlyJarInSurefire>
             </properties>
         </profile>
         <profile>
@@ -180,7 +183,7 @@
                         <version>3.0.0-M5</version>
                         <configuration>
                             <forkCount>1</forkCount>
-                            <useManifestOnlyJar>true</useManifestOnlyJar>
+                            <useManifestOnlyJar>${useManifestOnlyJarInSurefire}</useManifestOnlyJar>
                             <reuseForks>${reuseForksInSurefire}</reuseForks>
                             <testFailureIgnore>false</testFailureIgnore>
                             <argLine>-ea -Djava.library.path=${project.basedir}${file.separator}${jniRelativePath}</argLine>
