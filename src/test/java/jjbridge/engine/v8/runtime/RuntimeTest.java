@@ -16,11 +16,16 @@ import org.junit.jupiter.api.Test;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.spy;
 
 public class RuntimeTest {
+    static {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    }
+
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     private V8Engine engine;
     
@@ -202,8 +207,8 @@ public class RuntimeTest {
     @Test
     public void dateResultScript() {
         try (JSRuntime runtime = engine.newRuntime()) {
-            JSReference result = runtime.executeScript("new Date(6403, 3, 14, 7, 58, 33, 197)");
-            Date expected = simpleDateFormat.parse("6403-04-14T05:58:33.197Z");
+            JSReference result = runtime.executeScript("new Date(Date.UTC(6403, 3, 14, 7, 58, 33, 197))");
+            Date expected = simpleDateFormat.parse("6403-04-14T07:58:33.197Z");
             assertEquals(expected, ((JSDate) runtime.resolveReference(result)).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
