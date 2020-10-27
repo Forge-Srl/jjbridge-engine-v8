@@ -38,8 +38,17 @@ public:
 	    }
 
 	    runtime->FunctionCacheDelete(env, handle->AsLong());
+	    if (env->ExceptionCheck() == JNI_TRUE) {
+            return;
+        }
         runtime->TypeGetterCacheDelete(env, handle->AsLong());
+        if (env->ExceptionCheck() == JNI_TRUE) {
+            return;
+        }
         runtime->EqualityCheckerCacheDelete(env, handle->AsLong());
+        if (env->ExceptionCheck() == JNI_TRUE) {
+            return;
+        }
 
         alreadyCleared = true;
 	}
@@ -51,8 +60,17 @@ public:
 	        return;
 	    }
 	    runtime->FunctionCacheStore(env, handle->AsLong(), handler);
+	    if (env->ExceptionCheck() == JNI_TRUE) {
+            return;
+        }
         runtime->TypeGetterCacheStore(env, handle->AsLong(), typeGetter);
+        if (env->ExceptionCheck() == JNI_TRUE) {
+            return;
+        }
         runtime->EqualityCheckerCacheStore(env, handle->AsLong(), equalityChecker);
+        if (env->ExceptionCheck() == JNI_TRUE) {
+            return;
+        }
 	}
 
     inline auto callbackFromCache() const -> jobject
@@ -108,6 +126,9 @@ public:
 	        return;
 	    }
 	    runtime->ExternalCacheDelete(env, handle->AsLong());
+	    if (env->ExceptionCheck() == JNI_TRUE) {
+            return;
+        }
 	    handle->Reset();
 
         alreadyCleared = true;
@@ -120,6 +141,9 @@ public:
 	        return;
 	    }
 	    runtime->ExternalCacheStore(env, handle->AsLong(), external);
+	    if (env->ExceptionCheck() == JNI_TRUE) {
+            return;
+        }
 	}
 
     inline auto externalFromCache() const -> jobject
@@ -363,7 +387,11 @@ extern "C"
 		newLocalContext(runtime, context)
 		v8::Local<v8::External> external = Handle::FromLong(referenceHandle)->GetLocal<v8::External>();
 		auto* data = (ExternalData*) external->Value();
-		return data == nullptr ? nullptr : data->externalFromCache();
+		auto* result = data == nullptr ? nullptr : data->externalFromCache();
+		if (env->ExceptionCheck() == JNI_TRUE) {
+            return nullptr;
+        }
+		return result;
 	}
 
 	JNIEXPORT void JNICALL
@@ -579,8 +607,29 @@ extern "C"
 				JNIEnv* env = callbackData->env;
 				Runtime* runtime = callbackData->runtime;
                 jobject callback = callbackData->callbackFromCache();
+                if (env->ExceptionCheck() == JNI_TRUE) {
+                	jthrowable exception = env->ExceptionOccurred();
+                	env->ExceptionClear();
+                    runtime->throwJNIExceptionInJS(env, exception);
+                    args.GetReturnValue().SetUndefined();
+                    return;
+                }
                 jobject typeGetter = callbackData->typeGetterFromCache();
+                if (env->ExceptionCheck() == JNI_TRUE) {
+                    jthrowable exception = env->ExceptionOccurred();
+                    env->ExceptionClear();
+                    runtime->throwJNIExceptionInJS(env, exception);
+                    args.GetReturnValue().SetUndefined();
+                    return;
+                }
                 jobject equalityChecker = callbackData->equalityCheckerFromCache();
+                if (env->ExceptionCheck() == JNI_TRUE) {
+                    jthrowable exception = env->ExceptionOccurred();
+                    env->ExceptionClear();
+                    runtime->throwJNIExceptionInJS(env, exception);
+                    args.GetReturnValue().SetUndefined();
+                    return;
+                }
 
 				jsize argCount = args.Length();
 				jobjectArray varArguments = Runtime::environment->NewReferenceArray(env, argCount);

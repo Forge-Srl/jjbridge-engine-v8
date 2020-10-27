@@ -65,6 +65,11 @@ public:
 	{
 	    jobject reference = environment->NewReference(env, handle->AsLong(), type, typeGetter, equalityChecker);
 	    environment->trackReference(env, this->getHandle(), reference, this->referenceMonitor);
+	    if (env->ExceptionCheck() == JNI_TRUE) {
+        	// Don't clear so there is no need to rethrow exception
+        	// env->ExceptionClear();
+            return nullptr;
+        }
 		return reference;
 	}
 

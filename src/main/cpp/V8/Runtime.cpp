@@ -163,10 +163,19 @@ auto Runtime::safeRelease(JNIEnv* env, jlong runtimeHandle) -> bool
 	env->DeleteGlobalRef(runtime->referenceMonitor);
 
 	env->CallVoidMethod(runtime->functionCache, environment->cacheClear);
+	if (env->ExceptionCheck() == JNI_TRUE) {
+        env->ExceptionClear();
+    }
 	env->DeleteGlobalRef(runtime->functionCache);
 	env->CallVoidMethod(runtime->typeGetterCache, environment->cacheClear);
+	if (env->ExceptionCheck() == JNI_TRUE) {
+        env->ExceptionClear();
+    }
 	env->DeleteGlobalRef(runtime->typeGetterCache);
 	env->CallVoidMethod(runtime->externalCache, environment->cacheClear);
+	if (env->ExceptionCheck() == JNI_TRUE) {
+        env->ExceptionClear();
+    }
 	env->DeleteGlobalRef(runtime->externalCache);
 
 	runtime->context.Reset();
