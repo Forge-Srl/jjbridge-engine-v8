@@ -1,4 +1,4 @@
-name: Build JJBridge V8 Engine
+name: Build JJBridge V8 Engine for Android
 
 on:
   push:
@@ -23,4 +23,6 @@ jobs:
           key: ${{ runner.os }}-android-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-android-m2
       - name: Build and test
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: mvn -B verify --file pom.xml -P !Common,Android,Linux
