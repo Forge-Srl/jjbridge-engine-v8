@@ -25,4 +25,14 @@ jobs:
       - name: Build and test
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: mvn -B verify --file pom.xml -P Common,macOS -DreuseForksInSurefire=false
+        run: mvn -B verify --file pom.xml -P Common,macOS
+      - name: Get surefire errors for debug
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: surefire-report
+          path: |
+            target/surefire-reports/**
+            target/surefire/**
+            *surefire*
+            *jvmRun*
