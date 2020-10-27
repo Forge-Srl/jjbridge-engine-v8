@@ -8,7 +8,7 @@
 # cmake <...> -DJJB_TARGET_PLATFORM=Android -DANDROID_ABI=arm64-v8a   -DNDK_PATH=<...>
 # cmake <...> -DJJB_TARGET_PLATFORM=Android -DANDROID_ABI=armeabi-v7a -DNDK_PATH=<...>
 
-cmake_minimum_required(VERSION 3.17.4)
+cmake_minimum_required(VERSION 3.17.0)
 
 set(CMAKE_C_COMPILER clang)
 set(CMAKE_CXX_COMPILER clang++)
