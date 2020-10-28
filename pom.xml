@@ -283,6 +283,35 @@
                     <tagNameFormat>release/@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.0.0-M1</version>
+                <executions>
+                    <execution>
+                        <id>deploy-all-artifacts</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>${project.version}</version>
+                            <description>${project.description}</description>
+                            <classifiers>linux,android,macos,windows</classifiers>
+                            <types>jar,aar</types>
+                            <files>
+                                target${file.separator}${project.artifactId}-${project.version}-android.aar,
+                                target${file.separator}${project.artifactId}-${project.version}-linux.jar,
+                                target${file.separator}${project.artifactId}-${project.version}-macos.jar,
+                                target${file.separator}${project.artifactId}-${project.version}-windows.jar
+                            </files>
+                            <javadoc>target${file.separator}${project.artifactId}-${project.version}-javadoc.jar</javadoc>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

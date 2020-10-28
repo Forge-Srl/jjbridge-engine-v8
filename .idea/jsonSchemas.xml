@@ -23,6 +23,9 @@
                   <Item>
                     <option name="path" value=".github/workflows/build_windows.yml" />
                   </Item>
+                  <Item>
+                    <option name="path" value=".github/workflows/release.yml" />
+                  </Item>
                 </list>
               </option>
             </SchemaInfo>
