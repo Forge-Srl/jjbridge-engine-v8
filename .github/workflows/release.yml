@@ -145,4 +145,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          mvn -B deploy --file pom.xml -P Common,!Linux -Dexec.skip=true -Dmaven.main.skip=true -Dmaven.test.skip=true -Dassembly.skipAssembly=true -Dcheckstyle.skip=true -Dspotbugs.skip=true
+          mvn -B deploy --file pom.xml -P Common,!Linux -Dexec.skip=true -Dscript.executor=echo -Dmaven.main.skip=true -Dmaven.test.skip=true -Dassembly.skipAssembly=true -Dcheckstyle.skip=true -Dspotbugs.skip=true
