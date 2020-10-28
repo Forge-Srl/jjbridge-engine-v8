@@ -126,6 +126,21 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - uses: actions/download-artifact@v2
+        with:
+          name: android
+          path: target
+      - uses: actions/download-artifact@v2
+        with:
+          name: linux
+          path: target
+      - uses: actions/download-artifact@v2
+        with:
+          name: macos
+          path: target
+      - uses: actions/download-artifact@v2
+        with:
+          name: windows
+          path: target
       - name: Release
         env:
           GITHUB_TOKEN: ${{ github.token }}
