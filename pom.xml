@@ -282,28 +282,39 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.0.0-M1</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
-                        <id>deploy-all-artifacts</id>
-                        <phase>deploy</phase>
+                        <id>add-platform-artifacts</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>deploy-file</goal>
+                            <goal>attach-artifact</goal>
                         </goals>
                         <configuration>
-                            <url>${project.distributionManagement.repository.url}</url>
-                            <repositoryId>${project.distributionManagement.repository.id}</repositoryId>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>${project.artifactId}</artifactId>
-                            <version>${project.version}</version>
-                            <description>${project.description}</description>
-                            <classifiers>android,linux,macos,windows</classifiers>
-                            <types>aar,jar,jar,jar</types>
-                            <files>target${file.separator}${project.artifactId}-${project.version}.aar,target${file.separator}${project.artifactId}-${project.version}-linux.jar,target${file.separator}${project.artifactId}-${project.version}-macos.jar,target${file.separator}${project.artifactId}-${project.version}-windows.jar</files>
-                            <file>target${file.separator}${project.artifactId}-${project.version}.jar</file>
-                            <javadoc>target${file.separator}${project.artifactId}-${project.version}-javadoc.jar</javadoc>
+                            <artifacts>
+                                <artifact>
+                                    <file>target${file.separator}${project.artifactId}-${project.version}.aar</file>
+                                    <type>aar</type>
+                                    <classifier>android</classifier>
+                                </artifact>
+                                <artifact>
+                                    <file>target${file.separator}${project.artifactId}-${project.version}-linux.jar</file>
+                                    <type>jar</type>
+                                    <classifier>linux</classifier>
+                                </artifact>
+                                <artifact>
+                                    <file>target${file.separator}${project.artifactId}-${project.version}-macos.jar</file>
+                                    <type>jar</type>
+                                    <classifier>macos</classifier>
+                                </artifact>
+                                <artifact>
+                                    <file>target${file.separator}${project.artifactId}-${project.version}-windows.jar</file>
+                                    <type>jar</type>
+                                    <classifier>windows</classifier>
+                                </artifact>
+                            </artifacts>
                         </configuration>
                     </execution>
                 </executions>
