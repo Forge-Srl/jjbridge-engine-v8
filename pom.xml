@@ -299,14 +299,9 @@
                             <artifactId>${project.artifactId}</artifactId>
                             <version>${project.version}</version>
                             <description>${project.description}</description>
-                            <classifiers>linux,android,macos,windows</classifiers>
-                            <types>jar,aar</types>
-                            <files>
-                                target${file.separator}${project.artifactId}-${project.version}-android.aar,
-                                target${file.separator}${project.artifactId}-${project.version}-linux.jar,
-                                target${file.separator}${project.artifactId}-${project.version}-macos.jar,
-                                target${file.separator}${project.artifactId}-${project.version}-windows.jar
-                            </files>
+                            <classifiers>android,linux,macos,windows</classifiers>
+                            <types>aar,jar,jar,jar</types>
+                            <files>target${file.separator}${project.artifactId}-${project.version}.aar,target${file.separator}${project.artifactId}-${project.version}-linux.jar,target${file.separator}${project.artifactId}-${project.version}-macos.jar,target${file.separator}${project.artifactId}-${project.version}-windows.jar</files>
                             <file>target${file.separator}${project.artifactId}-${project.version}.jar</file>
                             <javadoc>target${file.separator}${project.artifactId}-${project.version}-javadoc.jar</javadoc>
                         </configuration>
