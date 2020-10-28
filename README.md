@@ -10,7 +10,7 @@
 
 JJBridge is a multi-library project which brings JavaScript execution capabilities to Java.
 
-JJBridge V8 Engine allows using [V8](https://v8.dev/) as the underlying engine for JJBridge Api.
+JJBridge V8 Engine allows using [V8](https://v8.dev/) as the underlying engine for [JJBridge Api](https://github.com/Forge-Srl/jjbridge-api).
 
 V8 precompiled binaries are taken from https://github.com/tbossi/v8-builder
 
