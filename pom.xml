@@ -57,6 +57,7 @@
                 <script.executor>powershell.exe</script.executor>
                 <jar.classifier>windows</jar.classifier>
                 <reuseForksInSurefire>false</reuseForksInSurefire>
+                <skipSigning>true</skipSigning>
             </properties>
         </profile>
         <profile>
@@ -73,6 +74,7 @@
                 <script.executor>bash</script.executor>
                 <jar.classifier>linux</jar.classifier>
                 <reuseForksInSurefire>false</reuseForksInSurefire>
+                <skipSigning>true</skipSigning>
             </properties>
         </profile>
         <profile>
@@ -88,6 +90,7 @@
                 <script.executor>zsh</script.executor>
                 <jar.classifier>macos</jar.classifier>
                 <reuseForksInSurefire>true</reuseForksInSurefire>
+                <skipSigning>true</skipSigning>
             </properties>
         </profile>
         <profile>
@@ -97,6 +100,7 @@
             </activation>
             <properties>
                 <packaging.type>aar</packaging.type>
+                <skipSigning>true</skipSigning>
             </properties>
             <build>
                 <plugins>
@@ -220,6 +224,7 @@
                 </property>
             </activation>
             <properties>
+                <skipSigning>false</skipSigning>
             </properties>
             <distributionManagement>
                 <repository>
@@ -238,6 +243,7 @@
                 </property>
             </activation>
             <properties>
+                <skipSigning>false</skipSigning>
             </properties>
             <distributionManagement>
                 <repository>
@@ -351,6 +357,7 @@
                             <goal>sign</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipSigning}</skip>
                             <gpgArguments>
                                 <arg>--pinentry-mode</arg>
                                 <arg>loopback</arg>

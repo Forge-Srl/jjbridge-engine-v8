@@ -14,10 +14,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: Configure GPG Key
         run: |
-          New-Item -Path $env:APPDATA\GnuPG
+          New-Item -ItemType "directory" -Path ~\.gnupg
           Write-Output "$GPG_SIGNING_KEY" > .\key.b64
-          certutil -decode .\key.b64 $env:APPDATA\GnuPG\private.key
-          gpg --batch --import $env:APPDATA\GnuPG\private.key
+          certutil -decode .\key.b64 ~\.gnupg\private.key
+          gpg --batch --import ~\.gnupg\private.key
         shell: powershell
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_KEY_FORGE_SRL_OPENSOURCE }}
