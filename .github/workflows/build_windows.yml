@@ -16,8 +16,8 @@ jobs:
         run: |
           New-Item -ItemType "directory" -Path "~\.gnupg"
           $GPG_SIGNING_KEY | Out-File ".\key.b64"
-          $inPath = Resolve-Path '.\key.b64' | Select-Object -ExpandProperty Path
-          $outPath = Resolve-Path '~\.gnupg\private.key' | Select-Object -ExpandProperty Path
+          $inPath = "$(Convert-Path .)\key.b64"
+          $outPath = "$(Convert-Path ~)\.gnupg\private.key"
           certutil -decode $inPath $outPath
           gpg --batch --import $outPath
         shell: powershell
