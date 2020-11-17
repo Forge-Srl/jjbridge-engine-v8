@@ -12,10 +12,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Configure GPG Key
+        run: |
+          export GPG_TTY=$(tty)
+          mkdir -p ~/.gnupg/
+          printf "$GPG_SIGNING_KEY" | base64 --decode > ~/.gnupg/private.key
+          gpg --batch --import ~/.gnupg/private.key
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_KEY_FORGE_SRL_OPENSOURCE }}
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - name: Cache Maven packages
         uses: actions/cache@v2
         with:
@@ -25,6 +34,7 @@ jobs:
       - name: Build and test
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE_FORGE_SRL_OPENSOURCE }}
         run: mvn -B verify --file pom.xml -P Common,Linux
       - name: Get surefire errors for debug
         if: ${{ failure() }}
