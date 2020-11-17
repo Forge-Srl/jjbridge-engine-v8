@@ -16,8 +16,7 @@ jobs:
         run: |
           New-Item -ItemType "directory" -Path "~\.gnupg"
           $outPath = "$(Convert-Path ~)\.gnupg\private.asc"
-          Write-Output "$GPG_SIGNING_KEY" > $outPath
-          unix2dos -1252 $outPath
+          $GPG_SIGNING_KEY | Out-File $outPath
           gpg --batch --import $outPath
         shell: powershell
         env:
