@@ -15,9 +15,8 @@ jobs:
       - name: Configure GPG Key
         run: |
           New-Item -ItemType "directory" -Path "~\.gnupg"
-          $outPath = "$(Convert-Path ~)\.gnupg\private.key"
-          $bytes = [Convert]::FromBase64String($GPG_SIGNING_KEY)
-          [IO.File]::WriteAllBytes($outPath, $bytes)
+          $outPath = "$(Convert-Path ~)\.gnupg\private.asc"
+          Write-Output "$GPG_SIGNING_KEY" > $outPath
           gpg --batch --import $outPath
         shell: powershell
         env:

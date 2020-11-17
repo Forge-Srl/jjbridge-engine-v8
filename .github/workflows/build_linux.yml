@@ -16,8 +16,8 @@ jobs:
         run: |
           export GPG_TTY=$(tty)
           mkdir -p ~/.gnupg/
-          printf "$GPG_SIGNING_KEY" | base64 --decode > ~/.gnupg/private.key
-          gpg --batch --import ~/.gnupg/private.key
+          echo "$GPG_SIGNING_KEY" > ~/.gnupg/private.asc
+          gpg --batch --import ~/.gnupg/private.asc
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_KEY_FORGE_SRL_OPENSOURCE }}
       - name: Set up JDK 1.8
