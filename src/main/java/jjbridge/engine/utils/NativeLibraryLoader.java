@@ -95,7 +95,7 @@ public class NativeLibraryLoader
             {
                 System.load(library.getAbsolutePath());
             }
-            finally
+            catch (Throwable throwable)
             {
                 if (isPosixCompliant())
                 {

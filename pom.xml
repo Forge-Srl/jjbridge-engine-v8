@@ -89,7 +89,7 @@
                 <script.toExecuteAndroid>${project.basedir}${file.separator}build_Android.sh</script.toExecuteAndroid>
                 <script.executor>zsh</script.executor>
                 <jar.classifier>macos</jar.classifier>
-                <reuseForksInSurefire>true</reuseForksInSurefire>
+                <reuseForksInSurefire>false</reuseForksInSurefire>
                 <skipSigning>true</skipSigning>
             </properties>
         </profile>
@@ -192,6 +192,35 @@
                                 <PATH>${env.PATH}${path.separator}${project.basedir}${file.separator}${jniRelativePath}</PATH>
                             </environmentVariables>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>3.0.0-M5</version>
+                        <configuration>
+                            <includes>
+                                <include>**/RuntimeTest.java</include>
+                            </includes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <classesDirectory>target${file.separator}${project.artifactId}-${project.version}-${jar.classifier}.${packaging.type}</classesDirectory>
+                                    <runOrder>random</runOrder>
+                                    <forkCount>1</forkCount>
+                                    <reuseForks>${reuseForksInSurefire}</reuseForks>
+                                    <testFailureIgnore>false</testFailureIgnore>
+                                    <environmentVariables>
+                                        <LD_LIBRARY_PATH></LD_LIBRARY_PATH>
+                                        <PATH></PATH>
+                                    </environmentVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
