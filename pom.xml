@@ -215,8 +215,8 @@
                                     <reuseForks>${reuseForksInSurefire}</reuseForks>
                                     <testFailureIgnore>false</testFailureIgnore>
                                     <environmentVariables>
-                                        <LD_LIBRARY_PATH></LD_LIBRARY_PATH>
-                                        <PATH></PATH>
+                                        <LD_LIBRARY_PATH />
+                                        <PATH />
                                     </environmentVariables>
                                 </configuration>
                             </execution>
