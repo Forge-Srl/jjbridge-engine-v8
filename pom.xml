@@ -188,7 +188,6 @@
                             <testFailureIgnore>false</testFailureIgnore>
                             <argLine>-ea -Xcheck:jni -Djava.library.path=${project.basedir}${file.separator}${jniRelativePath}</argLine>
                             <environmentVariables>
-                                <LD_LIBRARY_PATH>${project.basedir}${file.separator}${jniRelativePath}</LD_LIBRARY_PATH>
                                 <PATH>${env.PATH}${path.separator}${project.basedir}${file.separator}${jniRelativePath}</PATH>
                             </environmentVariables>
                         </configuration>
@@ -215,7 +214,6 @@
                                     <reuseForks>${reuseForksInSurefire}</reuseForks>
                                     <testFailureIgnore>false</testFailureIgnore>
                                     <environmentVariables>
-                                        <LD_LIBRARY_PATH />
                                         <PATH />
                                     </environmentVariables>
                                 </configuration>

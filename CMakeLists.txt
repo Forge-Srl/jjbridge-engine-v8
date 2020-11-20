@@ -101,6 +101,7 @@ set(CMAKE_BUILD_TYPE Release)
 if(NOT (JJB_TARGET_PLATFORM STREQUAL "Android"))
     set(CMAKE_C_COMPILER_TARGET ${CLANG_ARCH_TRIPLE})
     set(CMAKE_CXX_COMPILER_TARGET ${CLANG_ARCH_TRIPLE})
+    set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
     # TODO: bisogna avere gli header java per queste piattaforme target!
