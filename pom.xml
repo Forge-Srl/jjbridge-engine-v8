@@ -4,7 +4,7 @@
 
     <groupId>srl.forge</groupId>
     <artifactId>jjbridge-engine-v8</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.2</version>
     <packaging>${packaging.type}</packaging>
 
     <name>JJBridge V8 Engine</name>
@@ -34,7 +34,7 @@
         <connection>scm:git:git@github.com:forge-srl/jjbridge-engine-v8.git</connection>
         <developerConnection>scm:git:git@github.com:forge-srl/jjbridge-engine-v8.git</developerConnection>
         <url>https://github.com/Forge-Srl/jjbridge-engine-v8/tree/main</url>
-        <tag>HEAD</tag>
+        <tag>release/0.1.2</tag>
     </scm>
 
     <properties>
