@@ -92,17 +92,17 @@ endif()
 
 if(JJB_TARGET_PLATFORM STREQUAL "Linux")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,'$ORIGIN'")
+    set(CMAKE_SKIP_BUILD_RPATH TRUE)
 elseif(JJB_TARGET_PLATFORM STREQUAL "macOS")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
-set(CMAKE_SHARED_LINKER_FLAGS "--verbose")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --verbose")
 set(CMAKE_BUILD_TYPE Release)
 
 if(NOT (JJB_TARGET_PLATFORM STREQUAL "Android"))
     set(CMAKE_C_COMPILER_TARGET ${CLANG_ARCH_TRIPLE})
     set(CMAKE_CXX_COMPILER_TARGET ${CLANG_ARCH_TRIPLE})
-    set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
-    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
     # TODO: bisogna avere gli header java per queste piattaforme target!
     #       Vedi: https://bsideup.github.io/posts/jni-cross-compilation/
