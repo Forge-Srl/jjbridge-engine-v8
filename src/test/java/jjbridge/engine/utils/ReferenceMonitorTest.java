@@ -16,6 +16,11 @@ public class ReferenceMonitorTest {
     }
 
     @Test
+    public void isDaemon() {
+        assertTrue(referenceMonitor.isDaemon());
+    }
+
+    @Test
     public void runAndTrackReferences() {
         referenceMonitor.start();
 

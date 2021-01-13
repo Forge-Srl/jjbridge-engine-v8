@@ -59,6 +59,7 @@ public class ReferenceMonitor<T> extends Thread
         this.interrupted = new AtomicBoolean(false);
         this.referenceQueue = new ReferenceQueue<>();
         this.references = new HashMap<>();
+        this.setDaemon(true);
     }
 
     private static long generateId()
