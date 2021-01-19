@@ -1,9 +1,9 @@
 package jjbridge.engine.v8.runtime;
 
-import jjbridge.engine.MemoryTimeWaster;
 import jjbridge.api.runtime.*;
 import jjbridge.api.value.*;
 import jjbridge.api.value.strategy.FunctionCallback;
+import jjbridge.engine.MemoryTimeWaster;
 import jjbridge.engine.utils.Cache;
 import jjbridge.engine.utils.CleanUpAction;
 import jjbridge.engine.utils.NativeReference;
@@ -17,6 +17,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.spy;
@@ -738,6 +741,49 @@ public class RuntimeTest {
             }
         } catch (Exception e) {
             fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void functionInDifferentThread() {
+        try (JSRuntime runtime = engine.newRuntime())
+        {
+            JSReference threadFunc = runtime.newReference(JSType.Function);
+            Integer[] results = new Integer[5];
+
+            {
+                Thread thread = new Thread(() -> {
+                    JSReference innerFunc = runtime.executeScript("(x) => x + 2");
+                    JSFunction<?> jsFunction = runtime.resolveReference(threadFunc);
+                    jsFunction.setFunction(jsReferences -> {
+                        ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
+                        for (int i = 0; i < 5; i++)
+                        {
+                            int finalI = i;
+                            service.schedule(() -> {
+                                JSFunction<?> f = runtime.resolveReference(innerFunc);
+                                JSReference input = runtime.newReference(JSType.Integer);
+                                ((JSInteger) runtime.resolveReference(input)).setValue(finalI);
+                                JSReference output = f.invoke(innerFunc, input);
+                                results[finalI] = ((JSInteger) runtime.resolveReference(output)).getValue();
+                            }, i + 1, TimeUnit.SECONDS);
+                        }
+
+                        return runtime.newReference(JSType.Undefined);
+                    });
+                });
+                thread.start();
+                thread.join();
+            }
+
+            JSReference outerFunc = runtime.executeScript("(func) => func()");
+            ((JSFunction<?>)runtime.resolveReference(outerFunc)).invoke(outerFunc, threadFunc);
+            Thread.sleep(6500);
+
+            assertArrayEquals(results, new Integer[] {2,3,4,5,6});
+        } catch (Exception e)
+        {
+            e.printStackTrace();
         }
     }
 

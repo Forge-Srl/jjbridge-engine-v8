@@ -22,8 +22,8 @@ public:
     Runtime* runtime;
     Handle* handle;
 
-    FunctionCallbackData(JNIEnv* env, Runtime* runtime, Handle* handle)
-    : env(env)
+    FunctionCallbackData(Runtime* runtime, Handle* handle)
+    : env(nullptr)
     , runtime(runtime)
     , handle(handle)
     {
@@ -610,11 +610,13 @@ extern "C"
         auto* oldCallbackData = handle->GetFinalizerParameter<FunctionCallbackData>();
         if (oldCallbackData != nullptr)
         {
+            oldCallbackData->env = env;
             oldCallbackData->clearReference();
             delete oldCallbackData;
         }
 
-        auto* callbackData = new FunctionCallbackData(env, runtime, handle);
+        auto* callbackData = new FunctionCallbackData(runtime, handle);
+        callbackData->env = env;
         callbackData->storeInCache(handler, typeGetter, equalityChecker);
         v8::Local<v8::External> additionalData = v8::External::New(runtime->isolate, callbackData);
 
@@ -624,7 +626,10 @@ extern "C"
                 v8::Local<v8::External> data = v8::Local<v8::External>::Cast(args.Data());
                 auto* callbackData = static_cast<FunctionCallbackData*>(data->Value());
 
-                JNIEnv* env = callbackData->env;
+                JNIEnv* env;
+                auto attachedThread = Runtime::environment->getCurrentThreadEnv(&env, JNI_VERSION);
+                callbackData->env = env;
+
                 Runtime* runtime = callbackData->runtime;
                 jobject callback = callbackData->callbackFromCache();
                 if (env->ExceptionCheck() == JNI_TRUE) {
@@ -632,6 +637,10 @@ extern "C"
                     env->ExceptionClear();
                     runtime->throwJNIExceptionInJS(env, exception);
                     args.GetReturnValue().SetUndefined();
+                    if (attachedThread == 1)
+                    {
+                        Runtime::environment->releaseCurrentThreadEnv();
+                    }
                     return;
                 }
                 jobject typeGetter = callbackData->typeGetterFromCache();
@@ -640,6 +649,10 @@ extern "C"
                     env->ExceptionClear();
                     runtime->throwJNIExceptionInJS(env, exception);
                     args.GetReturnValue().SetUndefined();
+                    if (attachedThread == 1)
+                    {
+                        Runtime::environment->releaseCurrentThreadEnv();
+                    }
                     return;
                 }
                 jobject equalityChecker = callbackData->equalityCheckerFromCache();
@@ -648,6 +661,10 @@ extern "C"
                     env->ExceptionClear();
                     runtime->throwJNIExceptionInJS(env, exception);
                     args.GetReturnValue().SetUndefined();
+                    if (attachedThread == 1)
+                    {
+                        Runtime::environment->releaseCurrentThreadEnv();
+                    }
                     return;
                 }
 
@@ -668,6 +685,10 @@ extern "C"
                     env->ExceptionClear();
                     runtime->throwJNIExceptionInJS(env, exception);
                     args.GetReturnValue().SetUndefined();
+                    if (attachedThread == 1)
+                    {
+                        Runtime::environment->releaseCurrentThreadEnv();
+                    }
                     return;
                 }
 
@@ -675,14 +696,25 @@ extern "C"
                 v8::Local<v8::Value> resultValue = Handle::FromLong(resultHandle)->GetLocal<v8::Value>();
 
                 args.GetReturnValue().Set(resultValue);
+                if (attachedThread == 1)
+                {
+                    Runtime::environment->releaseCurrentThreadEnv();
+                }
             }, additionalData);
 
         handle->Set(functionTemplate->GetFunction(context).ToLocalChecked());
         handle->SetFinalizer<FunctionCallbackData>(callbackData,
             [](const v8::WeakCallbackInfo<FunctionCallbackData>& data) {
                 FunctionCallbackData* callbackData = data.GetParameter();
+                JNIEnv* env;
+                auto attachedThread = Runtime::environment->getCurrentThreadEnv(&env, JNI_VERSION);
+                callbackData->env = env;
                 callbackData->clearReference();
                 delete callbackData;
+                if (attachedThread == 1)
+                {
+                    Runtime::environment->releaseCurrentThreadEnv();
+                }
             });
     }
 
