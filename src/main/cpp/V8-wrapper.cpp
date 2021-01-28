@@ -6,155 +6,13 @@
 #include "V8/Environment.h"
 #include "V8/Runtime.h"
 #include "V8/Handle.h"
+#include "V8/ExternalData.h"
+#include "V8/FunctionCallbackData.h"
 #include "V8/InspectorClient.h"
 
 #define JPF(methodName) Java_jjbridge_engine_v8_V8_##methodName
 
 Environment* Runtime::environment = nullptr;
-
-class FunctionCallbackData
-{
-private:
-    bool alreadyCleared;
-
-public:
-    JNIEnv* env;
-    Runtime* runtime;
-    Handle* handle;
-
-    FunctionCallbackData(Runtime* runtime, Handle* handle)
-    : env(nullptr)
-    , runtime(runtime)
-    , handle(handle)
-    {
-        alreadyCleared = false;
-    }
-
-    void clearReference()
-    {
-        if (alreadyCleared)
-        {
-            return;
-        }
-
-        runtime->FunctionCacheDelete(env, handle->AsLong());
-        if (env->ExceptionCheck() == JNI_TRUE) {
-            return;
-        }
-        runtime->TypeGetterCacheDelete(env, handle->AsLong());
-        if (env->ExceptionCheck() == JNI_TRUE) {
-            return;
-        }
-        runtime->EqualityCheckerCacheDelete(env, handle->AsLong());
-        if (env->ExceptionCheck() == JNI_TRUE) {
-            return;
-        }
-
-        alreadyCleared = true;
-    }
-
-    inline void storeInCache(jobject handler, jobject typeGetter, jobject equalityChecker) const
-    {
-        if (alreadyCleared)
-        {
-            return;
-        }
-        runtime->FunctionCacheStore(env, handle->AsLong(), handler);
-        if (env->ExceptionCheck() == JNI_TRUE) {
-            return;
-        }
-        runtime->TypeGetterCacheStore(env, handle->AsLong(), typeGetter);
-        if (env->ExceptionCheck() == JNI_TRUE) {
-            return;
-        }
-        runtime->EqualityCheckerCacheStore(env, handle->AsLong(), equalityChecker);
-        if (env->ExceptionCheck() == JNI_TRUE) {
-            return;
-        }
-    }
-
-    inline auto callbackFromCache() const -> jobject
-    {
-        if (alreadyCleared)
-        {
-            throw std::runtime_error("FunctionCallbackData already cleared!");
-        }
-        return runtime->FunctionCacheGet(env, handle->AsLong());
-    }
-
-    inline auto typeGetterFromCache() const -> jobject
-    {
-        if (alreadyCleared)
-        {
-            throw std::runtime_error("FunctionCallbackData already cleared!");
-        }
-        return runtime->TypeGetterCacheGet(env, handle->AsLong());
-    }
-
-    inline auto equalityCheckerFromCache() const -> jobject
-    {
-        if (alreadyCleared)
-        {
-            throw std::runtime_error("FunctionCallbackData already cleared!");
-        }
-        return runtime->EqualityCheckerCacheGet(env, handle->AsLong());
-    }
-};
-
-class ExternalData
-{
-private:
-    bool alreadyCleared;
-
-public:
-    JNIEnv* env;
-    Runtime* runtime;
-    Handle* handle;
-
-    ExternalData(JNIEnv* env, Runtime* runtime, Handle* handle)
-    : env(env)
-    , runtime(runtime)
-    , handle(handle)
-    {
-        alreadyCleared = false;
-    }
-
-    void clearReference()
-    {
-        if (alreadyCleared)
-        {
-            return;
-        }
-        runtime->ExternalCacheDelete(env, handle->AsLong());
-        if (env->ExceptionCheck() == JNI_TRUE) {
-            return;
-        }
-        handle->Reset();
-
-        alreadyCleared = true;
-    }
-
-    inline void storeInCache(jobject external) const
-    {
-        if (alreadyCleared)
-        {
-            return;
-        }
-        runtime->ExternalCacheStore(env, handle->AsLong(), external);
-        if (env->ExceptionCheck() == JNI_TRUE) {
-            return;
-        }
-    }
-
-    inline auto externalFromCache() const -> jobject
-    {
-        if (alreadyCleared)
-        {
-            throw std::runtime_error("ExternalData already cleared!");
-        }
-        return runtime->ExternalCacheGet(env, handle->AsLong());
-    }
-};
 
 extern "C"
 {
@@ -387,7 +245,11 @@ extern "C"
         newLocalContext(runtime, context)
         v8::Local<v8::External> external = Handle::FromLong(referenceHandle)->GetLocal<v8::External>();
         auto* data = (ExternalData*) external->Value();
-        auto* result = data == nullptr ? nullptr : data->externalFromCache();
+        if (data == nullptr) {
+            return nullptr;
+        }
+        auto* result = data->externalFromCache(env);
+
         if (env->ExceptionCheck() == JNI_TRUE) {
             return nullptr;
         }
@@ -405,19 +267,25 @@ extern "C"
         auto* oldExternalData = handle->GetFinalizerParameter<ExternalData>();
         if (oldExternalData != nullptr)
         {
-            oldExternalData->clearReference();
+            oldExternalData->clearReference(env);
             delete oldExternalData;
         }
 
-        auto* externalData = new ExternalData(env, runtime, handle);
-        externalData->storeInCache(value);
+        auto* externalData = new ExternalData(runtime, handle);
+        externalData->storeInCache(env, value);
 
         handle->Set(v8::External::New(runtime->isolate, externalData));
         handle->SetFinalizer<ExternalData>(externalData,
             [](const v8::WeakCallbackInfo<ExternalData>& data) {
                 ExternalData* externalData = data.GetParameter();
-                externalData->clearReference();
+                JNIEnv* env;
+                auto attachedThread = Runtime::environment->getCurrentThreadEnv(&env, JNI_VERSION);
+                externalData->clearReference(env);
                 delete externalData;
+                if (attachedThread == 1)
+                {
+                    Runtime::environment->releaseCurrentThreadEnv();
+                }
             });
     }
 
@@ -426,7 +294,7 @@ extern "C"
     {
         Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
         newLocalContext(runtime, context)
-        auto* externalData = new ExternalData(env, runtime, nullptr);
+        auto* externalData = new ExternalData(runtime, nullptr);
         Handle::FromLong(referenceHandle)->Set(v8::External::New(runtime->isolate, externalData));
     }
 
@@ -610,14 +478,12 @@ extern "C"
         auto* oldCallbackData = handle->GetFinalizerParameter<FunctionCallbackData>();
         if (oldCallbackData != nullptr)
         {
-            oldCallbackData->env = env;
-            oldCallbackData->clearReference();
+            oldCallbackData->clearReference(env);
             delete oldCallbackData;
         }
 
         auto* callbackData = new FunctionCallbackData(runtime, handle);
-        callbackData->env = env;
-        callbackData->storeInCache(handler, typeGetter, equalityChecker);
+        callbackData->storeInCache(env, handler, typeGetter, equalityChecker);
         v8::Local<v8::External> additionalData = v8::External::New(runtime->isolate, callbackData);
 
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(runtime->isolate,
@@ -628,10 +494,9 @@ extern "C"
 
                 JNIEnv* env;
                 auto attachedThread = Runtime::environment->getCurrentThreadEnv(&env, JNI_VERSION);
-                callbackData->env = env;
 
                 Runtime* runtime = callbackData->runtime;
-                jobject callback = callbackData->callbackFromCache();
+                jobject callback = callbackData->callbackFromCache(env);
                 if (env->ExceptionCheck() == JNI_TRUE) {
                     jthrowable exception = env->ExceptionOccurred();
                     env->ExceptionClear();
@@ -643,7 +508,7 @@ extern "C"
                     }
                     return;
                 }
-                jobject typeGetter = callbackData->typeGetterFromCache();
+                jobject typeGetter = callbackData->typeGetterFromCache(env);
                 if (env->ExceptionCheck() == JNI_TRUE) {
                     jthrowable exception = env->ExceptionOccurred();
                     env->ExceptionClear();
@@ -655,7 +520,7 @@ extern "C"
                     }
                     return;
                 }
-                jobject equalityChecker = callbackData->equalityCheckerFromCache();
+                jobject equalityChecker = callbackData->equalityCheckerFromCache(env);
                 if (env->ExceptionCheck() == JNI_TRUE) {
                     jthrowable exception = env->ExceptionOccurred();
                     env->ExceptionClear();
@@ -708,8 +573,7 @@ extern "C"
                 FunctionCallbackData* callbackData = data.GetParameter();
                 JNIEnv* env;
                 auto attachedThread = Runtime::environment->getCurrentThreadEnv(&env, JNI_VERSION);
-                callbackData->env = env;
-                callbackData->clearReference();
+                callbackData->clearReference(env);
                 delete callbackData;
                 if (attachedThread == 1)
                 {
