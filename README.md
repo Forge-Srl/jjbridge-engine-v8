@@ -32,7 +32,7 @@ your target platform:
   <dependency>
     <groupId>srl.forge</groupId>
     <artifactId>jjbridge-engine-v8</artifactId>
-    <version>0.1.2</version>
+    <version>0.1.4</version>
     <classifier>linux</classifier>
   </dependency>
   ```
@@ -41,7 +41,7 @@ your target platform:
   <dependency>
     <groupId>srl.forge</groupId>
     <artifactId>jjbridge-engine-v8</artifactId>
-    <version>0.1.2</version>
+    <version>0.1.4</version>
     <classifier>macos</classifier>
   </dependency>
   ```
@@ -50,7 +50,7 @@ your target platform:
   <dependency>
     <groupId>srl.forge</groupId>
     <artifactId>jjbridge-engine-v8</artifactId>
-    <version>0.1.2</version>
+    <version>0.1.4</version>
     <classifier>windows</classifier>
   </dependency>
   ```
@@ -59,7 +59,7 @@ your target platform:
   <dependency>
     <groupId>srl.forge</groupId>
     <artifactId>jjbridge-engine-v8</artifactId>
-    <version>0.1.2</version>
+    <version>0.1.4</version>
     <classifier>android</classifier>
     <type>aar</type>
   </dependency>
