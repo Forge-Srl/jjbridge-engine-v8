@@ -192,12 +192,6 @@ jobs:
         with:
           name: windows
           path: target
-      - name: Release on Github
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE_FORGE_SRL_OPENSOURCE }}
-        run: |
-          mvn -B deploy --file pom.xml -P Common,!Linux -Drelease-repo=github -Dexec.skip=true -Dscript.executor=echo -Dmaven.main.skip=true -Dmaven.test.skip=true -Dassembly.skipAssembly=true -Dcheckstyle.skip=true -Dspotbugs.skip=true
 
       - name: Set up Java 1.8 for publishing to Maven Central
         uses: actions/setup-java@v1
@@ -214,3 +208,15 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE_FORGE_SRL_OPENSOURCE }}
         run: |
           mvn -B deploy --file pom.xml -P Common,!Linux -Drelease-repo=maven-central -Dexec.skip=true -Dscript.executor=echo -Dmaven.main.skip=true -Dmaven.test.skip=true -Dassembly.skipAssembly=true -Dcheckstyle.skip=true -Dspotbugs.skip=true
+
+      - name: Set up JDK 1.8 for publishing to GitHub Package Registry
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Release on GitHub Package Registry
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE_FORGE_SRL_OPENSOURCE }}
+        run: |
+          mvn -B deploy --file pom.xml -P Common,!Linux -Drelease-repo=github -Dexec.skip=true -Dscript.executor=echo -Dmaven.main.skip=true -Dmaven.test.skip=true -Dassembly.skipAssembly=true -Dcheckstyle.skip=true -Dspotbugs.skip=true
