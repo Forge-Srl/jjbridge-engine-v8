@@ -89,18 +89,17 @@ public class InspectorInstrumentedTest {
             fail("Connection failed");
         }
 
-        int waitingTime = 5000;
         Thread t = new Thread(() -> {
             try {
-                Thread.sleep(waitingTime / 5);
+                Thread.sleep(2000);
                 inspectorClient.connectBlocking();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
 
+        inspector.attach(runtime);
         t.start();
-        inspector.attach(runtime).waitForConnection(waitingTime);
         t.join();
     }
 
