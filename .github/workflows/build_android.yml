@@ -7,6 +7,9 @@ on:
     tags-ignore:
       - 'release/**'
 
+  # Allows to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
 jobs:
   build_and_test_android:
     runs-on: ubuntu-latest
