@@ -40,6 +40,7 @@ public:
         if (env->ExceptionCheck() == JNI_TRUE) {
             return;
         }
+        handle->Reset();
 
         alreadyCleared = true;
     }
