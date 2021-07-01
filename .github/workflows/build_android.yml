@@ -34,7 +34,7 @@ jobs:
           key: android-ndk-${{ hashFiles('**/build_Android.sh') }}
           restore-keys: android-ndk
       - name: Get old Android Sdk
-        run: /usr/local/lib/android/sdk/tools/android update sdk --no-ui --obsolete --force
+        run: /usr/local/lib/android/sdk/tools/bin/sdkmanager "platforms;android-23"
       - name: Build and test
         env:
           GITHUB_TOKEN: ${{ github.token }}
