@@ -288,6 +288,8 @@ extern "C"
                 ExternalData* externalData = data.GetParameter();
                 JNIEnv* env;
                 auto attachedThread = Runtime::environment->getCurrentThreadEnv(&env, JNI_VERSION);
+                auto* runtime = externalData->runtime;
+                newLocalContext(runtime, finalizerContext)
                 externalData->clearReference(env);
                 delete externalData;
                 if (attachedThread == 1)
@@ -581,6 +583,8 @@ extern "C"
                 FunctionCallbackData* callbackData = data.GetParameter();
                 JNIEnv* env;
                 auto attachedThread = Runtime::environment->getCurrentThreadEnv(&env, JNI_VERSION);
+                auto* runtime = callbackData->runtime;
+                newLocalContext(runtime, finalizerContext)
                 callbackData->clearReference(env);
                 delete callbackData;
                 if (attachedThread == 1)
