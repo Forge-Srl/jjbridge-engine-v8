@@ -123,7 +123,10 @@ public class InspectorInstrumentedTest {
 
         inspectorClient.sendAndExpect(
                 "{\"id\":2,\"method\":\"Runtime.enable\"}",
-                response -> assertEquals("{\"method\":\"Runtime.executionContextCreated\",\"params\":{\"context\":{\"id\":1,\"origin\":\"\",\"name\":\"JJBridge-V8 Main Context\"}}}", response),
+                response -> {
+                    String regex = "\\{\"method\":\"Runtime\\.executionContextCreated\",\"params\":\\{\"context\":\\{\"id\":1,\"origin\":\"\",\"name\":\"JJBridge-V8 Main Context\",\"uniqueId\":\".*\"}}}";
+                    assertTrue(response.matches(regex));
+                },
                 response -> assertEquals("{\"id\":2,\"result\":{}}", response));
 
         inspectorClient.sendAndExpect(
@@ -149,7 +152,7 @@ public class InspectorInstrumentedTest {
                     assertEquals("{\"id\":7,\"result\":{}}", response);
                     waitBeforeScript.countDown();
                 },
-                response -> assertEquals("{\"method\":\"Debugger.scriptParsed\",\"params\":{\"scriptId\":\"3\",\"url\":\"/script_0\",\"startLine\":0,\"startColumn\":0,\"endLine\":0,\"endColumn\":66,\"executionContextId\":1,\"hash\":\"2f160716878340dd7c1e0066bcd32d7a37d6431e\",\"isLiveEdit\":false,\"sourceMapURL\":\"file:///script_0\",\"hasSourceURL\":false,\"isModule\":false,\"length\":66,\"scriptLanguage\":\"JavaScript\"}}", response));
+                response -> assertEquals("{\"method\":\"Debugger.scriptParsed\",\"params\":{\"scriptId\":\"3\",\"url\":\"/script_0\",\"startLine\":0,\"startColumn\":0,\"endLine\":0,\"endColumn\":66,\"executionContextId\":1,\"hash\":\"2f160716878340dd7c1e0066bcd32d7a37d6431e\",\"isLiveEdit\":false,\"sourceMapURL\":\"file:///script_0\",\"hasSourceURL\":false,\"isModule\":false,\"length\":66,\"scriptLanguage\":\"JavaScript\",\"embedderName\":\"/script_0\"}}", response));
 
         waitBeforeScript.await();
         String scriptSource = "class AAA { str() { console.log('AAA'); return 1000 } }; new AAA()";

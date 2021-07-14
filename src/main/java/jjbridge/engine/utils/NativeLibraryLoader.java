@@ -38,13 +38,15 @@ public class NativeLibraryLoader
      * </ul>
      *
      * @param libName the name of the library to load
+     * @return the absolute path to the loaded library
      * */
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
-    public static void load(final String libName)
+    public static String load(final String libName)
     {
         try
         {
             System.loadLibrary(libName);
+            return System.getProperty("java.library.path") + "/" + System.mapLibraryName(libName);
         }
         catch (Throwable t)
         {
@@ -93,7 +95,9 @@ public class NativeLibraryLoader
             File library = new File(tempDir, libraryName);
             try
             {
-                System.load(library.getAbsolutePath());
+                String libraryAbsolutePath = library.getAbsolutePath();
+                System.load(libraryAbsolutePath);
+                return libraryAbsolutePath;
             }
             catch (Throwable throwable)
             {
@@ -107,6 +111,7 @@ public class NativeLibraryLoader
                     // Assume non-POSIX, and don't delete until last file descriptor closed
                     library.deleteOnExit();
                 }
+                throw new RuntimeException(throwable);
             }
         }
     }

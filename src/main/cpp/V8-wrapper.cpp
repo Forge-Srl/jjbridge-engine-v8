@@ -41,6 +41,14 @@ extern "C"
     }
 
     JNIEXPORT void JNICALL
+    JPF(initializeV8)(JNIEnv* env, jobject thiz, jstring nativeLibraryPath)
+    {
+        const char* pathString = env->GetStringUTFChars(nativeLibraryPath, JNI_FALSE);
+        Runtime::environment->InitializeV8(pathString);
+        env->ReleaseStringUTFChars(nativeLibraryPath, pathString);
+    }
+
+    JNIEXPORT void JNICALL
     JPF(setFlags)(JNIEnv* env, jobject thiz, jstring flags)
     {
         const char* flagString = env->GetStringUTFChars(flags, JNI_FALSE);

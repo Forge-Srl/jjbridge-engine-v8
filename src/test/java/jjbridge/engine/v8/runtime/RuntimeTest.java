@@ -187,6 +187,24 @@ public class RuntimeTest {
     }
 
     @Test
+    public void i18nStringSupport() {
+        try (JSRuntime runtime = engine.newRuntime()) {
+            // We will use turkish language to test correct i18n support
+            // See: https://blog.codinghorror.com/whats-wrong-with-turkey/
+            String startingString = "asd ıIiİ asd";
+            String expectedString = "ASD IIİİ ASD";
+
+            JSReference result = runtime.executeScript("'"+startingString+"'.toLocaleUpperCase('tr-TR')");
+            assertEquals(expectedString, ((JSString)runtime.resolveReference(result)).getValue());
+            // Just a double check that everything is ok
+            result = runtime.executeScript("'"+startingString+"'.toLocaleUpperCase('tr-TR') === '"+expectedString+"'");
+            assertTrue(((JSBoolean)runtime.resolveReference(result)).getValue());
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void objectResultScript() {
         try (JSRuntime runtime = engine.newRuntime()) {
             JSReference result = runtime.executeScript("let k = { xx : 1 , yy : { zz : null } }; k");

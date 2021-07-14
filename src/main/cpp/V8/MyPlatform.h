@@ -51,6 +51,11 @@ public:
 	    return platform->IdleTasksEnabled(isolate);
 	}
 
+	auto PostJob(v8::TaskPriority priority, std::unique_ptr<v8::JobTask> job_task) -> std::unique_ptr<v8::JobHandle> override
+	{
+	    return platform->PostJob(priority, std::move(job_task));
+	}
+
 	auto MonotonicallyIncreasingTime() -> double override
 	{
 	    return platform->MonotonicallyIncreasingTime();

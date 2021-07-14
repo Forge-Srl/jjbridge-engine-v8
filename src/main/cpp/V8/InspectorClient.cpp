@@ -70,7 +70,9 @@ void InspectorClient::send(const v8_inspector::StringView& string)
 
 void InspectorClient::dispatchMessage(const v8_inspector::StringView& string)
 {
+    v8::Isolate::Scope isolateScope((runtime)->isolate);
     v8::Locker locker(runtime->isolate);
+    v8::HandleScope handleScope(runtime->isolate);
     session->dispatchProtocolMessage(string);
 }
 

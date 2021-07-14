@@ -136,6 +136,10 @@ add_library(V8-wrapper SHARED
             "${SRC_DIR}/V8-wrapper.cpp")
 
 if(JJB_TARGET_PLATFORM STREQUAL "Linux")
+    add_library(icui18n SHARED IMPORTED)
+    set_target_properties(icui18n PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libicui18n.so)
+    add_library(icuuc SHARED IMPORTED)
+    set_target_properties(icuuc PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libicuuc.so)
     add_library(zlib SHARED IMPORTED)
     set_target_properties(zlib PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libchrome_zlib.so)
     add_library(v8 SHARED IMPORTED)
@@ -145,9 +149,13 @@ if(JJB_TARGET_PLATFORM STREQUAL "Linux")
     add_library(v8-platform SHARED IMPORTED)
     set_target_properties(v8-platform PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libv8_libplatform.so)
 
-    target_link_libraries(V8-wrapper v8 v8-base v8-platform zlib)
+    target_link_libraries(V8-wrapper v8 v8-base v8-platform icui18n icuuc zlib)
 
 elseif(JJB_TARGET_PLATFORM STREQUAL "macOS")
+    add_library(icui18n SHARED IMPORTED)
+    set_target_properties(icui18n PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libicui18n.dylib)
+    add_library(icuuc SHARED IMPORTED)
+    set_target_properties(icuuc PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libicuuc.dylib)
     add_library(zlib SHARED IMPORTED)
     set_target_properties(zlib PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libchrome_zlib.dylib)
     add_library(v8 SHARED IMPORTED)
@@ -157,9 +165,13 @@ elseif(JJB_TARGET_PLATFORM STREQUAL "macOS")
     add_library(v8-platform SHARED IMPORTED)
     set_target_properties(v8-platform PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libv8_libplatform.dylib)
 
-    target_link_libraries(V8-wrapper v8 v8-base v8-platform zlib)
+    target_link_libraries(V8-wrapper v8 v8-base v8-platform icui18n icuuc zlib)
 
 elseif(JJB_TARGET_PLATFORM STREQUAL "Android")
+    add_library(icui18n SHARED IMPORTED)
+    set_target_properties(icui18n PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libicui18n.cr.so)
+    add_library(icuuc SHARED IMPORTED)
+    set_target_properties(icuuc PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libicuuc.cr.so)
     add_library(cpp-shared SHARED IMPORTED)
     set_target_properties(cpp-shared PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libc++_shared.so)
     add_library(v8 SHARED IMPORTED)
@@ -171,7 +183,7 @@ elseif(JJB_TARGET_PLATFORM STREQUAL "Android")
     add_library(zlib SHARED IMPORTED)
     set_target_properties(zlib PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/libchrome_zlib.cr.so)
 
-    target_link_libraries(V8-wrapper v8 v8-base v8-platform cpp-shared zlib)
+    target_link_libraries(V8-wrapper v8 v8-base v8-platform icui18n icuuc cpp-shared zlib)
 
 elseif(JJB_TARGET_PLATFORM STREQUAL "Windows")
     add_library(v8 SHARED IMPORTED)
@@ -186,6 +198,12 @@ elseif(JJB_TARGET_PLATFORM STREQUAL "Windows")
     add_library(zlib SHARED IMPORTED)
     set_target_properties(zlib PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/zlib.dll
                                           IMPORTED_IMPLIB ${V8_BINARIES}/zlib.dll.lib)
+    add_library(icui18n SHARED IMPORTED)
+    set_target_properties(icui18n PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/icui18n.dll
+                                          IMPORTED_IMPLIB ${V8_BINARIES}/icui18n.dll.lib)
+    add_library(icuuc SHARED IMPORTED)
+    set_target_properties(icuuc PROPERTIES IMPORTED_LOCATION ${V8_BINARIES}/icuuc.dll
+                                          IMPORTED_IMPLIB ${V8_BINARIES}/icuuc.dll.lib)
 
-    target_link_libraries(V8-wrapper v8 v8-base v8-platform zlib)
+    target_link_libraries(V8-wrapper v8 v8-base v8-platform icui18n icuuc zlib)
 endif()

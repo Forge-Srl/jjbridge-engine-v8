@@ -10,7 +10,8 @@ public class V8
 {
     static
     {
-        NativeLibraryLoader.load("V8-wrapper");
+        String libraryPath = NativeLibraryLoader.load("V8-wrapper");
+        initializeV8(libraryPath);
     }
 
     private static V8 instance;
@@ -37,6 +38,8 @@ public class V8
     }
 
     static native void setFlags(String flags);
+
+    private static native void initializeV8(String nativeLibraryPath);
 
     private static native void releaseReference(long runtimeHandle, long referenceHandle);
 

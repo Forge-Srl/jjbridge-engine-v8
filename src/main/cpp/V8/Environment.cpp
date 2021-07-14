@@ -55,8 +55,14 @@ Environment::Environment(JavaVM* jvm, JNIEnv* env)
 , INIT_METHOD(messageHandlerSendToInspector, messageHandlerClass, "sendToInspector", "(Ljava/lang/String;)V")
 {
 	_jvm = jvm;
+}
 
-	v8::V8::InitializeICU();
+void Environment::InitializeV8(const char* libraryPath)
+{
+    if (!v8::V8::InitializeICUDefaultLocation(libraryPath))
+	{
+	    throw "ICU initialization failed";
+	}
 	_platform = new MyPlatform();
 	v8::V8::InitializePlatform(_platform);
 	v8::V8::Initialize();
