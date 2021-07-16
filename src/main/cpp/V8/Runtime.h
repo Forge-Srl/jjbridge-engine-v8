@@ -48,16 +48,16 @@ public:
 	void throwExecutionException(JNIEnv* env, v8::Local<v8::Context> context, v8::TryCatch* tryCatch) const;
 	void throwExecutionException(JNIEnv* env, const std::u16string &message);
 
-    inline auto getReferenceType(JNIEnv* env, Handle* handle) -> jobject
+    inline auto getReferenceType(JNIEnv* env, v8::Local<v8::Context> context, Handle* handle) -> jobject
     {
-        return environment->getResultType(env, handle->GetLocal<v8::Value>());
+        return environment->getResultType(env, context, handle->GetLocal<v8::Value>());
     }
 
-    inline auto NewReference(JNIEnv* env, const v8::Local<v8::Value>& value, jobject typeGetter,
-        jobject equalityChecker) -> jobject
+    inline auto NewReference(JNIEnv* env, v8::Local<v8::Context> context, const v8::Local<v8::Value>& value,
+        jobject typeGetter, jobject equalityChecker) -> jobject
     {
         auto* handle = new Handle(isolate, value);
-        return NewReference(env, handle, getReferenceType(env, handle), typeGetter, equalityChecker);
+        return NewReference(env, handle, getReferenceType(env, context, handle), typeGetter, equalityChecker);
     }
 
     inline auto NewReference(JNIEnv* env, Handle* handle, jobject type, jobject typeGetter,

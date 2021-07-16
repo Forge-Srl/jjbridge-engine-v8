@@ -75,7 +75,7 @@ extern "C"
         Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
         newLocalContext(runtime, context)
         v8::Local<v8::Object> global = context->Global();
-        return runtime->NewReference(env, global, typeGetter, equalityChecker);
+        return runtime->NewReference(env, context, global, typeGetter, equalityChecker);
     }
 
     JNIEXPORT auto JNICALL
@@ -93,7 +93,7 @@ extern "C"
         v8::Local<v8::Value> result;
         if (!runtime->runScript(env, context, script, result)) { return nullptr; }
 
-        return runtime->NewReference(env, result, typeGetter, equalityChecker);
+        return runtime->NewReference(env, context, result, typeGetter, equalityChecker);
     }
 
     JNIEXPORT auto JNICALL
@@ -101,7 +101,7 @@ extern "C"
     {
         Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
         newLocalContext(runtime, context)
-        return runtime->getReferenceType(env, Handle::FromLong(referenceHandle));
+        return runtime->getReferenceType(env, context, Handle::FromLong(referenceHandle));
     }
 
     JNIEXPORT auto JNICALL
@@ -165,27 +165,28 @@ extern "C"
     }
 
     JNIEXPORT auto JNICALL
-    JPF(getIntegerValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle) -> jint
+    JPF(getLongValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle) -> jlong
     {
         Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
         newLocalContext(runtime, context)
-        return (Handle::FromLong(referenceHandle)->GetLocal<v8::Value>()->ToInt32(context)).ToLocalChecked()->Value();
+        return (Handle::FromLong(referenceHandle)->GetLocal<v8::Value>()->ToInteger(context)).ToLocalChecked()->Value();
     }
 
     JNIEXPORT void JNICALL
-    JPF(setIntegerValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jint value)
+    JPF(setLongValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jlong value)
     {
         Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
         newLocalContext(runtime, context)
-        Handle::FromLong(referenceHandle)->Set(v8::Int32::New(runtime->isolate, (int)value));
+        // Only v8::Number has a constructor taking a 64 bit number!
+        Handle::FromLong(referenceHandle)->Set(v8::Number::New(runtime->isolate, value));
     }
 
     JNIEXPORT void JNICALL
-    JPF(initIntegerValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
+    JPF(initLongValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
     {
         Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
         newLocalContext(runtime, context)
-        Handle::FromLong(referenceHandle)->Set(v8::Int32::New(runtime->isolate, 0));
+        Handle::FromLong(referenceHandle)->Set(v8::Number::New(runtime->isolate, 0));
     }
 
     JNIEXPORT auto JNICALL
@@ -324,7 +325,7 @@ extern "C"
             return nullptr;
         }
 
-        return runtime->NewReference(env, maybePropertyValue.ToLocalChecked(), typeGetter, equalityChecker);
+        return runtime->NewReference(env, context, maybePropertyValue.ToLocalChecked(), typeGetter, equalityChecker);
     }
 
     JNIEXPORT void JNICALL
@@ -428,7 +429,7 @@ extern "C"
             return nullptr;
         }
 
-        return runtime->NewReference(env, maybeValue.ToLocalChecked(), typeGetter, equalityChecker);
+        return runtime->NewReference(env, context, maybeValue.ToLocalChecked(), typeGetter, equalityChecker);
     }
 
     JNIEXPORT auto JNICALL
@@ -466,7 +467,7 @@ extern "C"
             return nullptr;
         }
 
-        return runtime->NewReference(env, maybeValue.ToLocalChecked(), typeGetter, equalityChecker);
+        return runtime->NewReference(env, context, maybeValue.ToLocalChecked(), typeGetter, equalityChecker);
     }
 
     JNIEXPORT void JNICALL
@@ -536,10 +537,11 @@ extern "C"
                 }
 
                 jsize argCount = args.Length();
+                newLocalContext(runtime, context)
                 jobjectArray varArguments = Runtime::environment->NewReferenceArray(env, argCount);
                 for (int i = 0; i < argCount; ++i)
                 {
-                    jobject item = runtime->NewReference(env, args[i], typeGetter, equalityChecker);
+                    jobject item = runtime->NewReference(env, context, args[i], typeGetter, equalityChecker);
                     env->SetObjectArrayElement(varArguments, i, item);
                 }
 
@@ -614,7 +616,7 @@ extern "C"
         v8::Local<v8::Array> array = Handle::FromLong(referenceHandle)->GetLocal<v8::Array>();
         v8::Local<v8::Value> element = array->Get(context, position).ToLocalChecked();
 
-        return runtime->NewReference(env, element, typeGetter, equalityChecker);
+        return runtime->NewReference(env, context, element, typeGetter, equalityChecker);
     }
 
     JNIEXPORT void JNICALL

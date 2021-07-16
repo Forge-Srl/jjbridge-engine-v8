@@ -44,7 +44,7 @@ Environment::Environment(JavaVM* jvm, JNIEnv* env)
 , INIT_ENUM_VALUE(jsTypeNull, jsTypeClass, "Null", "Ljjbridge/api/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeBoolean, jsTypeClass, "Boolean", "Ljjbridge/api/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeInteger, jsTypeClass, "Integer", "Ljjbridge/api/value/JSType;")
-, INIT_ENUM_VALUE(jsTypeDouble, jsTypeClass, "Double", "Ljjbridge/api/value/JSType;")
+, INIT_ENUM_VALUE(jsTypeFloat, jsTypeClass, "Float", "Ljjbridge/api/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeString, jsTypeClass, "String", "Ljjbridge/api/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeExternal, jsTypeClass, "External", "Ljjbridge/api/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeObject, jsTypeClass, "Object", "Ljjbridge/api/value/JSType;")
@@ -79,7 +79,7 @@ void Environment::Release(JNIEnv* env, Environment* environment)
 	env->DeleteGlobalRef(environment->jsTypeNull);
 	env->DeleteGlobalRef(environment->jsTypeBoolean);
 	env->DeleteGlobalRef(environment->jsTypeInteger);
-	env->DeleteGlobalRef(environment->jsTypeDouble);
+	env->DeleteGlobalRef(environment->jsTypeFloat);
 	env->DeleteGlobalRef(environment->jsTypeString);
 	env->DeleteGlobalRef(environment->jsTypeExternal);
 	env->DeleteGlobalRef(environment->jsTypeObject);
@@ -90,14 +90,18 @@ void Environment::Release(JNIEnv* env, Environment* environment)
 	delete environment;
 }
 
-auto Environment::getResultType(JNIEnv* env, const v8::Local<v8::Value> &result) const -> jobject
+auto Environment::getResultType(JNIEnv* env, v8::Local<v8::Context> context, const v8::Local<v8::Value> &result) const -> jobject
 {
 	if (result->IsUndefined()) { return jsTypeUndefined; }
 	if (result->IsNull()) { return jsTypeNull; }
 	if (result->IsBoolean()) { return jsTypeBoolean; }
-	if (result->IsInt32()) { return jsTypeInteger; }
-	if (result->IsNumber()) { return jsTypeDouble;	}
-	if (result->IsString()) { return jsTypeString;	}
+	if (result->IsNumber())
+	{
+	    if (std::fmod(result->NumberValue(context).ToChecked(), 1.0) == 0.0) { return jsTypeInteger; }
+
+	    return jsTypeFloat;
+	}
+	if (result->IsString()) { return jsTypeString; }
 	if (result->IsExternal()) { return jsTypeExternal; }
 	if (result->IsObject())
 	{

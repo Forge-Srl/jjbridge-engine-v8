@@ -66,11 +66,11 @@ public class V8
 
     public native void initBooleanValue(long runtimeHandle, long valueHandle);
 
-    public native int getIntegerValue(long runtimeHandle, long valueHandle);
+    public native long getLongValue(long runtimeHandle, long valueHandle);
 
-    public native void setIntegerValue(long runtimeHandle, long valueHandle, int value);
+    public native void setLongValue(long runtimeHandle, long valueHandle, long value);
 
-    public native void initIntegerValue(long runtimeHandle, long valueHandle);
+    public native void initLongValue(long runtimeHandle, long valueHandle);
 
     public native double getDoubleValue(long runtimeHandle, long valueHandle);
 

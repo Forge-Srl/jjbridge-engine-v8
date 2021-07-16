@@ -6,8 +6,8 @@ import jjbridge.api.runtime.JSRuntime;
 import jjbridge.api.value.JSArray;
 import jjbridge.api.value.JSBoolean;
 import jjbridge.api.value.JSDate;
-import jjbridge.api.value.JSDouble;
 import jjbridge.api.value.JSExternal;
+import jjbridge.api.value.JSFloat;
 import jjbridge.api.value.JSFunction;
 import jjbridge.api.value.JSInteger;
 import jjbridge.api.value.JSNull;
@@ -70,10 +70,10 @@ public class Runtime extends JSBaseRuntime<Reference>
                 return (T) new JSBoolean(accessorsFactory.booleanGetter(reference.handle),
                         accessorsFactory.booleanSetter(reference.handle));
             case Integer:
-                return (T) new JSInteger(accessorsFactory.integerGetter(reference.handle),
-                        accessorsFactory.integerSetter(reference.handle));
-            case Double:
-                return (T) new JSDouble(accessorsFactory.doubleGetter(reference.handle),
+                return (T) new JSInteger(accessorsFactory.longGetter(reference.handle),
+                        accessorsFactory.longSetter(reference.handle));
+            case Float:
+                return (T) new JSFloat(accessorsFactory.doubleGetter(reference.handle),
                         accessorsFactory.doubleSetter(reference.handle));
             case String:
                 return (T) new JSString(accessorsFactory.stringGetter(reference.handle),
@@ -122,9 +122,9 @@ public class Runtime extends JSBaseRuntime<Reference>
                 this.v8.initBooleanValue(this.runtimeHandle, reference.handle);
                 break;
             case Integer:
-                this.v8.initIntegerValue(this.runtimeHandle, reference.handle);
+                this.v8.initLongValue(this.runtimeHandle, reference.handle);
                 break;
-            case Double:
+            case Float:
                 this.v8.initDoubleValue(this.runtimeHandle, reference.handle);
                 break;
             case String:

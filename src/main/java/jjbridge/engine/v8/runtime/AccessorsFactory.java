@@ -57,14 +57,14 @@ class AccessorsFactory
         return value -> this.v8.setBooleanValue(this.runtimeHandle, handle, value);
     }
 
-    protected ValueGetter<Integer> integerGetter(long handle)
+    protected ValueGetter<Long> longGetter(long handle)
     {
-        return () -> this.v8.getIntegerValue(this.runtimeHandle, handle);
+        return () -> this.v8.getLongValue(this.runtimeHandle, handle);
     }
 
-    protected ValueSetter<Integer> integerSetter(long handle)
+    protected ValueSetter<Long> longSetter(long handle)
     {
-        return value -> this.v8.setIntegerValue(this.runtimeHandle, handle, value);
+        return value -> this.v8.setLongValue(this.runtimeHandle, handle, value);
     }
 
     protected ValueGetter<Double> doubleGetter(long handle)

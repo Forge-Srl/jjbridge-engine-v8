@@ -64,18 +64,18 @@ public class AccessorsFactoryTest {
 
     @Test
     public void integerGetter() {
-        int value = 150;
-        ValueGetter<Integer> getter = factory.integerGetter(referenceHandle);
-        when(v8.getIntegerValue(runtimeHandle, referenceHandle)).thenReturn(value);
-        assertEquals(value, (int) getter.getValue());
+        long value = 150;
+        ValueGetter<Long> getter = factory.longGetter(referenceHandle);
+        when(v8.getLongValue(runtimeHandle, referenceHandle)).thenReturn(value);
+        assertEquals(value, (long) getter.getValue());
     }
 
     @Test
     public void integerSetter() {
-        int value = 150;
-        ValueSetter<Integer> setter = factory.integerSetter(referenceHandle);
+        long value = 150;
+        ValueSetter<Long> setter = factory.longSetter(referenceHandle);
         setter.setValue(value);
-        verify(v8).setIntegerValue(runtimeHandle, referenceHandle, value);
+        verify(v8).setLongValue(runtimeHandle, referenceHandle, value);
     }
 
     @Test
