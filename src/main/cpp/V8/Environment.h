@@ -45,7 +45,7 @@ public:
     const jobject jsTypeNull;
     const jobject jsTypeBoolean;
     const jobject jsTypeInteger;
-    const jobject jsTypeDouble;
+    const jobject jsTypeFloat;
     const jobject jsTypeString;
     const jobject jsTypeExternal;
     const jobject jsTypeObject;
@@ -93,7 +93,7 @@ public:
     	v8::V8::SetFlagsFromString(flags, strlen(flags));
 	}
 
-	auto getResultType(JNIEnv* env, const v8::Local<v8::Value> &result) const -> jobject;
+	auto getResultType(JNIEnv* env, v8::Local<v8::Context> context, const v8::Local<v8::Value> &result) const -> jobject;
 
     inline auto NewReference(JNIEnv* env, jlong objectHandle, jobject type, jobject typeGetter, jobject equalityChecker) const -> jobject
     {

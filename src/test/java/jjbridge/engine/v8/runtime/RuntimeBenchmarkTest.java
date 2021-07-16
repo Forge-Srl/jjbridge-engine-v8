@@ -55,7 +55,7 @@ public class RuntimeBenchmarkTest
 
     private void memoryLeakAction(JSRuntime runtime) {
         final String stringToCheck = "some string to check";
-        final int numberToCheck = 9856214;
+        final long numberToCheck = 9856214;
 
         JSReference arg1 = runtime.newReference(JSType.Null);
         JSReference arg2 = runtime.newReference(JSType.String);
@@ -83,7 +83,7 @@ public class RuntimeBenchmarkTest
         assertTrue(callbackResult[0]);
         assertTrue(callbackResult[1]);
         assertTrue(callbackResult[2]);
-        assertEquals(numberToCheck, (int) ((JSInteger) runtime.resolveReference(functionResult)).getValue());
+        assertEquals(numberToCheck, (long) ((JSInteger) runtime.resolveReference(functionResult)).getValue());
 
         function.setFunction(arguments -> {
             JSReference reference = runtime.newReference(JSType.Undefined);
