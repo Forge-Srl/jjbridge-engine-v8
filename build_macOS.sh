@@ -22,4 +22,6 @@ cmake --build . && (
   install_name_tool -change "@rpath/libv8_libbase.dylib" "@loader_path/libv8_libbase.dylib" libV8-wrapper.dylib
   install_name_tool -change "@rpath/libv8_libplatform.dylib" "@loader_path/libv8_libplatform.dylib" libV8-wrapper.dylib
   install_name_tool -change "@rpath/libchrome_zlib.dylib" "@loader_path/libchrome_zlib.dylib" libV8-wrapper.dylib
+  install_name_tool -change "@rpath/libicuuc.dylib" "@loader_path/libicuuc.dylib" libV8-wrapper.dylib
+  install_name_tool -change "@rpath/libicui18n.dylib" "@loader_path/libicui18n.dylib" libV8-wrapper.dylib
 )

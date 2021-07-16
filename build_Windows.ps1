@@ -23,5 +23,6 @@ If ($?) {
     Copy-Item "build\windows\Release\V8-wrapper.lib" -Destination "windows\x86_64"
     Copy-Item "build\windows\Release\V8-wrapper.exp" -Destination "windows\x86_64"
     Copy-Item -Path "..\..\jni\v8\platforms\windows-x86_64\*.dll" -Destination "windows\x86_64"
+    Copy-Item -Path "..\..\jni\v8\platforms\windows-x86_64\*.dat" -Destination "windows\x86_64"
 }
 Set-Location $srcPath

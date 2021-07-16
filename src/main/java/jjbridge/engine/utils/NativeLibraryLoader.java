@@ -38,15 +38,32 @@ public class NativeLibraryLoader
      * </ul>
      *
      * @param libName the name of the library to load
+     * @param forceDependencies list of dependencies to force-load before loading the library
      * @return the absolute path to the loaded library
      * */
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
-    public static String load(final String libName)
+    public static String load(final String libName, final String[] forceDependencies)
     {
         try
         {
-            System.loadLibrary(libName);
-            return System.getProperty("java.library.path") + "/" + System.mapLibraryName(libName);
+            try
+            {
+                System.loadLibrary(libName);
+            }
+            catch (Throwable t)
+            {
+                if (t.getMessage().contains("no " + libName + " in java.library.path"))
+                {
+                    throw t;
+                }
+
+                for (String dependency : forceDependencies)
+                {
+                    System.loadLibrary(dependency);
+                }
+                System.loadLibrary(libName);
+            }
+            return System.getProperty("java.library.path") + File.separator + System.mapLibraryName(libName);
         }
         catch (Throwable t)
         {
@@ -62,7 +79,7 @@ public class NativeLibraryLoader
             String libraryName = System.mapLibraryName(libName);
 
             // On Windows we need to preload all .dll dependencies
-            if (System.getProperty("os.name").toLowerCase(Locale.getDefault()).startsWith("win"))
+            if (isWindows())
             {
                 // Also we must repeat loading twice to resolve possible circular dependencies
                 for (int i = 0; i < 2; i++)
@@ -81,6 +98,7 @@ public class NativeLibraryLoader
                                     }
                                     catch (Throwable e)
                                     {
+                                        System.err.println("Caught loading exception:\n\t" + e.getMessage());
                                         // It's ok to fail here; will eventually fail later on final load.
                                     }
                                 });
@@ -202,5 +220,10 @@ public class NativeLibraryLoader
         {
             return false;
         }
+    }
+
+    private static boolean isWindows()
+    {
+        return System.getProperty("os.name").toLowerCase(Locale.getDefault()).startsWith("win");
     }
 }

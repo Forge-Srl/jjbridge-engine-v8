@@ -10,7 +10,7 @@ public class V8
 {
     static
     {
-        String libraryPath = NativeLibraryLoader.load("V8-wrapper");
+        String libraryPath = NativeLibraryLoader.load("V8-wrapper", new String[]{ "icuuc" });
         initializeV8(libraryPath);
     }
 
