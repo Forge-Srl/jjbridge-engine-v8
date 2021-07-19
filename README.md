@@ -32,7 +32,6 @@ your target platform:
   <dependency>
     <groupId>srl.forge</groupId>
     <artifactId>jjbridge-engine-v8</artifactId>
-    <version>0.1.4</version>
     <classifier>linux</classifier>
   </dependency>
   ```
@@ -41,7 +40,6 @@ your target platform:
   <dependency>
     <groupId>srl.forge</groupId>
     <artifactId>jjbridge-engine-v8</artifactId>
-    <version>0.1.4</version>
     <classifier>macos</classifier>
   </dependency>
   ```
@@ -50,7 +48,6 @@ your target platform:
   <dependency>
     <groupId>srl.forge</groupId>
     <artifactId>jjbridge-engine-v8</artifactId>
-    <version>0.1.4</version>
     <classifier>windows</classifier>
   </dependency>
   ```
@@ -59,7 +56,6 @@ your target platform:
   <dependency>
     <groupId>srl.forge</groupId>
     <artifactId>jjbridge-engine-v8</artifactId>
-    <version>0.1.4</version>
     <classifier>android</classifier>
     <type>aar</type>
   </dependency>
@@ -84,7 +80,7 @@ try (JSRuntime runtime = engine.newRuntime()) {
 ```
 
 ### Technical details
-JJBridge V8 Engine currently uses V8 version **8.4.371.22**. V8 precompiled binaries are taken from
+JJBridge V8 Engine currently uses V8 version **9.1.269.36**. V8 precompiled binaries are taken from
 <https://github.com/tbossi/v8-builder> thus the following platforms are supported:
 - Linux (x64)
 - Android (x86, x86-64, arm v7, arm v8)
