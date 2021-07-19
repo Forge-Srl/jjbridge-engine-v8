@@ -7,17 +7,19 @@ import jjbridge.api.value.JSObject;
 import jjbridge.engine.v8.V8Engine;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class InspectorInstrumentedTest {
     private JSRuntime runtime;
@@ -116,6 +118,7 @@ public class InspectorInstrumentedTest {
     }
 
     @Test
+    @Timeout(value = 15)
     public final void interactionWithInspector() throws InterruptedException {
         inspectorClient.sendAndExpect(
                 "{\"id\":1,\"method\":\"Profiler.enable\"}",
