@@ -137,7 +137,9 @@
                         <extensions>true</extensions>
                         <configuration>
                             <classifier>android</classifier>
+                            <release>true</release>
                             <nativeLibrariesDirectory>${project.basedir}${file.separator}target${file.separator}jni${file.separator}android${file.separator}</nativeLibrariesDirectory>
+                            <assetsDirectory>${project.basedir}${file.separator}target${file.separator}jni${file.separator}android_assets${file.separator}</assetsDirectory>
                             <androidManifestFile>${project.basedir}${file.separator}src${file.separator}android${file.separator}AndroidManifest.xml</androidManifestFile>
                         </configuration>
                     </plugin>

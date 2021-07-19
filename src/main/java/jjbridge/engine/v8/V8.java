@@ -5,13 +5,19 @@ import jjbridge.engine.utils.NativeLibraryLoader;
 import jjbridge.engine.utils.ReferenceMonitor;
 import jjbridge.engine.v8.runtime.Reference;
 
+import java.io.File;
+
 @SuppressWarnings("checkstyle:MissingJavadocType")
 public class V8
 {
     static
     {
         String libraryPath = NativeLibraryLoader.load("V8-wrapper", new String[]{ "icuuc" });
-        initializeV8(libraryPath);
+        //TODO: libraryPath is null on Android because assets loading must be handled separately
+        if (!initializeV8(libraryPath + File.separator + "icudtl.dat"))
+        {
+            throw new RuntimeException("Cannot initialize V8 from " + libraryPath);
+        }
     }
 
     private static V8 instance;
@@ -39,7 +45,7 @@ public class V8
 
     static native void setFlags(String flags);
 
-    private static native void initializeV8(String nativeLibraryPath);
+    private static native boolean initializeV8(String nativeLibraryPath);
 
     private static native void releaseReference(long runtimeHandle, long referenceHandle);
 

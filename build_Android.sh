@@ -36,8 +36,10 @@ for arch in $architectures; do
     cmake --build . && (
       cd ../../..
       mkdir -p "android/$arch"
+      mkdir -p "android_assets"
       cp "build/android/$arch/libV8-wrapper.so" "android/$arch"
-      cp "../../jni/v8/platforms/android-$arch"/* "android/$arch"
+      cp "../../jni/v8/platforms/android-$arch"/*.so "android/$arch"
+      cp "../../jni/v8/platforms/android-$arch"/*.dat "android_assets"
     )
   )
 done

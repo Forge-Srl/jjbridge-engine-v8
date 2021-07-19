@@ -39,7 +39,7 @@ public class NativeLibraryLoader
      *
      * @param libName the name of the library to load
      * @param forceDependencies list of dependencies to force-load before loading the library
-     * @return the absolute path to the loaded library
+     * @return the absolute path to the loaded library (or {@code null} on Android)
      * */
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public static String load(final String libName, final String[] forceDependencies)
@@ -63,7 +63,7 @@ public class NativeLibraryLoader
                 }
                 System.loadLibrary(libName);
             }
-            return System.getProperty("java.library.path") + File.separator + System.mapLibraryName(libName);
+            return isAndroid() ? null : System.getProperty("java.library.path");
         }
         catch (Throwable t)
         {
@@ -115,7 +115,7 @@ public class NativeLibraryLoader
             {
                 String libraryAbsolutePath = library.getAbsolutePath();
                 System.load(libraryAbsolutePath);
-                return libraryAbsolutePath;
+                return tempDir.getAbsolutePath();
             }
             catch (Throwable throwable)
             {
@@ -225,5 +225,14 @@ public class NativeLibraryLoader
     private static boolean isWindows()
     {
         return System.getProperty("os.name").toLowerCase(Locale.getDefault()).startsWith("win");
+    }
+
+    private static boolean isAndroid()
+    {
+        return System.getProperty("java.specification.vendor").toLowerCase(Locale.getDefault()).contains("android")
+                || System.getProperty("java.vendor").toLowerCase(Locale.getDefault()).contains("android")
+                || System.getProperty("java.vm.vendor").toLowerCase(Locale.getDefault()).contains("android")
+                || System.getProperty("java.vm.specification.vendor").toLowerCase(Locale.getDefault())
+                    .contains("android");
     }
 }

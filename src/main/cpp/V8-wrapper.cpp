@@ -40,12 +40,14 @@ extern "C"
         Runtime::environment = nullptr;
     }
 
-    JNIEXPORT void JNICALL
-    JPF(initializeV8)(JNIEnv* env, jobject thiz, jstring nativeLibraryPath)
+    JNIEXPORT auto JNICALL
+    JPF(initializeV8)(JNIEnv* env, jobject thiz, jstring nativeLibraryPath) -> jboolean
     {
         const char* pathString = env->GetStringUTFChars(nativeLibraryPath, JNI_FALSE);
-        Runtime::environment->InitializeV8(pathString);
+        const bool initialized = Runtime::environment->InitializeV8(pathString);
         env->ReleaseStringUTFChars(nativeLibraryPath, pathString);
+
+        return initialized;
     }
 
     JNIEXPORT void JNICALL
