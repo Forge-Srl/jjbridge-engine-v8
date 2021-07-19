@@ -2,6 +2,7 @@
 
 #include <jni.h>
 #include <string>
+#include <cmath>
 
 #include "libplatform/libplatform.h"
 #include "v8.h"
@@ -103,7 +104,7 @@ auto Environment::getResultType(JNIEnv* env, v8::Local<v8::Context> context, con
 	if (result->IsBoolean()) { return jsTypeBoolean; }
 	if (result->IsNumber())
 	{
-	    if (std::fmod(result->NumberValue(context).ToChecked(), 1.0) == 0.0) { return jsTypeInteger; }
+	    if (fmod(result->NumberValue(context).ToChecked(), 1.0) == 0.0) { return jsTypeInteger; }
 
 	    return jsTypeFloat;
 	}
