@@ -14,10 +14,12 @@ import org.junit.jupiter.api.Timeout;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -80,29 +82,31 @@ public class InspectorInstrumentedTest {
     @BeforeEach
     public final void before() throws URISyntaxException, InterruptedException {
         int port = 9088;
-
         V8Engine engine = new V8Engine();
         runtime = engine.newRuntime();
-        try {
-            inspector = engine.newInspector(port);
-            inspectorClient = new InspectorClient(new URI("ws://127.0.0.1:" + port));
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            fail("Connection failed");
-        }
 
-        Thread t = new Thread(() -> {
+        assertTimeout(Duration.ofSeconds(5), () -> {
             try {
-                Thread.sleep(2000);
-                inspectorClient.connectBlocking();
-            } catch (InterruptedException e) {
+                inspector = engine.newInspector(port);
+                inspectorClient = new InspectorClient(new URI("ws://127.0.0.1:" + port));
+            } catch (RuntimeException e) {
                 e.printStackTrace();
+                fail("Connection failed");
             }
-        });
 
-        inspector.attach(runtime);
-        t.start();
-        t.join();
+            Thread t = new Thread(() -> {
+                try {
+                    Thread.sleep(2500);
+                    inspectorClient.connectBlocking();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            inspector.attach(runtime);
+            t.start();
+            t.join();
+        });
     }
 
     @AfterEach
