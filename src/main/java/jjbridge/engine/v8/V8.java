@@ -5,22 +5,16 @@ import jjbridge.engine.utils.NativeLibraryLoader;
 import jjbridge.engine.utils.ReferenceMonitor;
 import jjbridge.engine.v8.runtime.Reference;
 
-import java.io.File;
-
 @SuppressWarnings("checkstyle:MissingJavadocType")
 public class V8
 {
+    private static final NativeLibraryLoader nativeLibraryLoader = new NativeLibraryLoader();
+    private static V8 instance;
+
     static
     {
-        String libraryPath = NativeLibraryLoader.load("V8-wrapper", new String[]{ "icuuc" });
-        //TODO: libraryPath is null on Android because assets loading must be handled separately
-        if (!initializeV8(libraryPath + File.separator + "icudtl.dat"))
-        {
-            throw new RuntimeException("Cannot initialize V8 from " + libraryPath);
-        }
+        nativeLibraryLoader.loadLibrary("V8-wrapper", new String[]{ "icuuc" });
     }
-
-    private static V8 instance;
 
     // Not private because mockito sucks
     protected V8()
@@ -29,7 +23,22 @@ public class V8
 
     static synchronized V8 getInstance()
     {
-        return instance != null ? instance : (instance = new V8());
+        if (instance != null)
+        {
+            return instance;
+        }
+
+        String resourcePath = nativeLibraryLoader.getResourcePath("icudtl.dat");
+        if (!initializeV8(resourcePath))
+        {
+            throw new RuntimeException("Cannot initialize V8 with " + resourcePath);
+        }
+        return instance = new V8();
+    }
+
+    static void setAssetLoader(NativeLibraryLoader.AssetLoader loader)
+    {
+        nativeLibraryLoader.setAssetLoader(loader);
     }
 
     @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", justification = "Called by native code")

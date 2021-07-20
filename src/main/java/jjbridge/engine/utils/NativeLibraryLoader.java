@@ -3,6 +3,7 @@ package jjbridge.engine.utils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,135 +26,22 @@ import java.util.zip.ZipInputStream;
  * */
 public class NativeLibraryLoader
 {
-    private static File tempDir;
-
-    /**
-     * Loads the given native library.
-     * <p>You should use this method much like {@link System#loadLibrary(String)}.</p>
-     * <p>This method performs additional attempts to load the library handling:</p>
-     * <ul>
-     *     <li>Whether the code is running from inside or outside a jar file.</li>
-     *     <li>Quirks of the operating systems in loading additional native libraries needed for the correct
-     *     execution.</li>
-     * </ul>
-     *
-     * @param libName the name of the library to load
-     * @param forceDependencies list of dependencies to force-load before loading the library
-     * @return the absolute path to the loaded library (or {@code null} on Android)
-     * */
-    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
-    public static String load(final String libName, final String[] forceDependencies)
-    {
-        try
-        {
-            try
-            {
-                System.loadLibrary(libName);
-            }
-            catch (Throwable t)
-            {
-                if (t.getMessage().contains("no " + libName + " in java.library.path"))
-                {
-                    throw t;
-                }
-
-                for (String dependency : forceDependencies)
-                {
-                    System.loadLibrary(dependency);
-                }
-                System.loadLibrary(libName);
-            }
-            return isAndroid() ? null : System.getProperty("java.library.path");
-        }
-        catch (Throwable t)
-        {
-            try
-            {
-                extractJniLibraries();
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-
-            String libraryName = System.mapLibraryName(libName);
-
-            // On Windows we need to preload all .dll dependencies
-            if (isWindows())
-            {
-                // Also we must repeat loading twice to resolve possible circular dependencies
-                for (int i = 0; i < 2; i++)
-                {
-                    try (Stream<Path> files = Files.walk(Paths.get(tempDir.getAbsolutePath())))
-                    {
-                        files.map(Path::toFile)
-                                .filter(f -> !f.isDirectory()
-                                        && f.getAbsolutePath().endsWith(".dll")
-                                        && !f.getAbsolutePath().endsWith(libraryName))
-                                .forEach(f ->
-                                {
-                                    try
-                                    {
-                                        System.load(f.getAbsolutePath());
-                                    }
-                                    catch (Throwable e)
-                                    {
-                                        System.err.println("Caught loading exception:\n\t" + e.getMessage());
-                                        // It's ok to fail here; will eventually fail later on final load.
-                                    }
-                                });
-                    }
-                    catch (IOException e)
-                    {
-                        // It's ok to fail here; will eventually fail later on final load.
-                    }
-                }
-            }
-
-            File library = new File(tempDir, libraryName);
-            try
-            {
-                String libraryAbsolutePath = library.getAbsolutePath();
-                System.load(libraryAbsolutePath);
-                return tempDir.getAbsolutePath();
-            }
-            catch (Throwable throwable)
-            {
-                if (isPosixCompliant())
-                {
-                    // Assume POSIX compliant file system, can be deleted after loading
-                    library.delete();
-                }
-                else
-                {
-                    // Assume non-POSIX, and don't delete until last file descriptor closed
-                    library.deleteOnExit();
-                }
-                throw new RuntimeException(throwable);
-            }
-        }
-    }
+    private static final String TEMP_DIR_PREFIX = "jjbridge-v8";
+    private File loadingDir;
+    private AssetLoader assetLoader;
 
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
-    private static void extractJniLibraries() throws IOException
+    private static void extractJniLibraries(File destinationDirectory) throws IOException
     {
-        if (tempDir != null)
-        {
-            return;
-        }
-
         CodeSource codeSource = NativeLibraryLoader.class.getProtectionDomain().getCodeSource();
         if (codeSource == null)
         {
             throw new IOException("Cannot extract files from jar");
         }
 
-        tempDir = createTempDirectory("jjbridge-v8");
-        tempDir.deleteOnExit();
-
         for (String path : getResourceFileNames(codeSource, "jni"))
         {
-            File tempFile = new File(tempDir, path.substring(4));
+            File tempFile = new File(destinationDirectory, path.substring(4));
             try (InputStream is = NativeLibraryLoader.class.getResourceAsStream("/" + path))
             {
                 Files.copy(is, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -234,5 +122,189 @@ public class NativeLibraryLoader
                 || System.getProperty("java.vm.vendor").toLowerCase(Locale.getDefault()).contains("android")
                 || System.getProperty("java.vm.specification.vendor").toLowerCase(Locale.getDefault())
                     .contains("android");
+    }
+
+    private static File automaticLoad(final String libName, final String[] forceDependencies)
+    {
+        try
+        {
+            System.loadLibrary(libName);
+        }
+        catch (Throwable t)
+        {
+            if (t.getMessage().contains("no " + libName + " in java.library.path"))
+            {
+                throw t;
+            }
+
+            for (String dependency : forceDependencies)
+            {
+                System.loadLibrary(dependency);
+            }
+            System.loadLibrary(libName);
+        }
+
+        return isAndroid() ? null : new File(System.getProperty("java.library.path"));
+    }
+
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
+    private static File manualLoad(final String libName)
+    {
+        File loadingDir;
+        try
+        {
+            loadingDir = createTempDirectory(TEMP_DIR_PREFIX);
+            loadingDir.deleteOnExit();
+
+            extractJniLibraries(loadingDir);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        String libraryName = System.mapLibraryName(libName);
+
+        // On Windows we need to preload all .dll dependencies
+        if (isWindows())
+        {
+            // Also we must repeat loading twice to resolve possible circular dependencies
+            for (int i = 0; i < 2; i++)
+            {
+                try (Stream<Path> files = Files.walk(Paths.get(loadingDir.getAbsolutePath())))
+                {
+                    files.map(Path::toFile)
+                            .filter(f -> !f.isDirectory()
+                                    && f.getAbsolutePath().endsWith(".dll")
+                                    && !f.getAbsolutePath().endsWith(libraryName))
+                            .forEach(f ->
+                            {
+                                try
+                                {
+                                    System.load(f.getAbsolutePath());
+                                }
+                                catch (Throwable e)
+                                {
+                                    System.err.println("Caught loading exception:\n\t" + e.getMessage());
+                                    // It's ok to fail here; will eventually fail later on final load.
+                                }
+                            });
+                }
+                catch (IOException e)
+                {
+                    // It's ok to fail here; will eventually fail later on final load.
+                }
+            }
+        }
+
+        File library = new File(loadingDir, libraryName);
+        try
+        {
+            String libraryAbsolutePath = library.getAbsolutePath();
+            System.load(libraryAbsolutePath);
+        }
+        catch (Throwable throwable)
+        {
+            if (isPosixCompliant())
+            {
+                // Assume POSIX compliant file system, can be deleted after loading
+                library.delete();
+            }
+            else
+            {
+                // Assume non-POSIX, and don't delete until last file descriptor closed
+                library.deleteOnExit();
+            }
+            throw new RuntimeException(throwable);
+        }
+
+        return loadingDir;
+    }
+
+    public NativeLibraryLoader()
+    {
+    }
+
+    /**
+     * Loads the given native library.
+     * <p>You should use this method much like {@link System#loadLibrary(String)}.</p>
+     * <p>This method performs additional attempts to load the library handling:</p>
+     * <ul>
+     *     <li>Whether the code is running from inside or outside a jar file.</li>
+     *     <li>Quirks of the operating systems in loading additional native libraries needed for the correct
+     *     execution.</li>
+     * </ul>
+     *
+     * @param libName the name of the library to load
+     * @param forceDependencies list of dependencies to force-load before loading the library
+     * */
+    public void loadLibrary(final String libName, final String[] forceDependencies)
+    {
+        try
+        {
+            loadingDir = automaticLoad(libName, forceDependencies);
+        }
+        catch (Throwable t)
+        {
+            loadingDir = manualLoad(libName);
+        }
+    }
+
+    /**
+     * Gets the path to a resource.
+     * <p>You can invoke this method only after {@link NativeLibraryLoader#loadLibrary(String, String[])}.</p>
+     * <p>If running on Android you must provide a {@link AssetLoader} by calling
+     * {@link NativeLibraryLoader#setAssetLoader(AssetLoader)}</p>
+     *
+     * @param fileName the name of the file to resolve
+     * @return the absolute path to the given resource file name
+     * */
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
+    public String getResourcePath(String fileName)
+    {
+        if (!isAndroid())
+        {
+            return loadingDir.getAbsolutePath() + File.separator + fileName;
+        }
+
+        if (assetLoader == null)
+        {
+            throw new NullPointerException("On Android you must set an AssetLoader!");
+        }
+
+        File tempDir = assetLoader.getTempDir();
+        File tempFile = new File(tempDir, fileName);
+        try (FileInputStream assetAsStream = assetLoader.getAssetAsStream(fileName))
+        {
+            Files.copy(assetAsStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+        catch (IOException e)
+        {
+            tempFile.delete();
+        }
+        return tempFile.getAbsolutePath();
+    }
+
+    public void setAssetLoader(AssetLoader assetLoader)
+    {
+        this.assetLoader = assetLoader;
+    }
+
+    public interface AssetLoader
+    {
+        /**
+         * Provides a temporary directory.
+         *
+         * @return the temporary directory
+         * */
+        File getTempDir();
+
+        /**
+         * Gets the stream associated to the to the asset file.
+         *
+         * @param fileName the name of the asset
+         * @return the stream of the asset
+         */
+        FileInputStream getAssetAsStream(String fileName);
     }
 }
