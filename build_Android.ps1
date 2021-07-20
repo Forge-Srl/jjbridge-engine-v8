@@ -39,9 +39,11 @@ foreach ($arch in $architectures) {
     If ($?) {
         Set-Location ..\..\..
         New-Item -ItemType "directory" -Name "android\$arch"
+        New-Item -ItemType "directory" -Name "android_assets"
 
         Copy-Item "build\android\$arch\libV8-wrapper.so" -Destination "android\$arch"
-        Copy-Item -Path "..\..\jni\v8\platforms\android-$arch\*" -Destination "android\$arch"
+        Copy-Item -Path "..\..\jni\v8\platforms\android-$arch\*.so" -Destination "android\$arch"
+        Copy-Item -Path "..\..\jni\v8\platforms\android-$arch\*.dat" -Destination "android_assets"
     }
     Pop-Location
 }

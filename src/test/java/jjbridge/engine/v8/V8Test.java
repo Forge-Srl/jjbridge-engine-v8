@@ -30,6 +30,7 @@ public class V8Test {
 
     @BeforeEach
     public void before() {
+        v8 = V8.getInstance();
         runtimeHandle = v8.createRuntime(referenceMonitor, functionCache, typeGetterCache, equalityCheckerCache, externalCache);
         referenceMonitor.start();
     }

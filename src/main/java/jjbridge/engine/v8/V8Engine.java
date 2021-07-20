@@ -5,6 +5,7 @@ import jjbridge.api.inspector.JSInspector;
 import jjbridge.api.runtime.JSRuntime;
 import jjbridge.api.value.strategy.FunctionCallback;
 import jjbridge.engine.utils.Cache;
+import jjbridge.engine.utils.NativeLibraryLoader;
 import jjbridge.engine.utils.ReferenceMonitor;
 import jjbridge.engine.v8.inspector.Inspector;
 import jjbridge.engine.v8.runtime.EqualityChecker;
@@ -30,6 +31,17 @@ public final class V8Engine implements JSEngine
             sb.append(flag).append(' ');
         }
         V8.setFlags(sb.toString());
+    }
+
+    /**
+     * Provide an asset loader.
+     * <p><strong>This method must be called if you run on Android.</strong></p>
+     *
+     * @param loader the asset loader
+     * */
+    public static void setAssetLoader(NativeLibraryLoader.AssetLoader loader)
+    {
+        V8.setAssetLoader(loader);
     }
 
     @Override

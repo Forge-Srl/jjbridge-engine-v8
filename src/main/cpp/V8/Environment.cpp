@@ -58,15 +58,16 @@ Environment::Environment(JavaVM* jvm, JNIEnv* env)
 	_jvm = jvm;
 }
 
-void Environment::InitializeV8(const char* libraryPath)
+auto Environment::InitializeV8(const char* libraryPath) -> bool
 {
-    if (!v8::V8::InitializeICUDefaultLocation(libraryPath))
+    if (!v8::V8::InitializeICU(libraryPath))
 	{
-	    throw "ICU initialization failed";
+	    return false;
 	}
 	_platform = new MyPlatform();
 	v8::V8::InitializePlatform(_platform);
 	v8::V8::Initialize();
+	return true;
 }
 
 void Environment::Release(JNIEnv* env, Environment* environment)

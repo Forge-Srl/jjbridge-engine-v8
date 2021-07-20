@@ -8,13 +8,13 @@ import jjbridge.engine.v8.runtime.Reference;
 @SuppressWarnings("checkstyle:MissingJavadocType")
 public class V8
 {
+    private static final NativeLibraryLoader nativeLibraryLoader = new NativeLibraryLoader();
+    private static V8 instance;
+
     static
     {
-        String libraryPath = NativeLibraryLoader.load("V8-wrapper", new String[]{ "icuuc" });
-        initializeV8(libraryPath);
+        nativeLibraryLoader.loadLibrary("V8-wrapper", new String[]{ "icuuc" });
     }
-
-    private static V8 instance;
 
     // Not private because mockito sucks
     protected V8()
@@ -23,7 +23,22 @@ public class V8
 
     static synchronized V8 getInstance()
     {
-        return instance != null ? instance : (instance = new V8());
+        if (instance != null)
+        {
+            return instance;
+        }
+
+        String resourcePath = nativeLibraryLoader.getResourcePath("icudtl.dat");
+        if (!initializeV8(resourcePath))
+        {
+            throw new RuntimeException("Cannot initialize V8 with " + resourcePath);
+        }
+        return instance = new V8();
+    }
+
+    static void setAssetLoader(NativeLibraryLoader.AssetLoader loader)
+    {
+        nativeLibraryLoader.setAssetLoader(loader);
     }
 
     @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", justification = "Called by native code")
@@ -39,7 +54,7 @@ public class V8
 
     static native void setFlags(String flags);
 
-    private static native void initializeV8(String nativeLibraryPath);
+    private static native boolean initializeV8(String nativeLibraryPath);
 
     private static native void releaseReference(long runtimeHandle, long referenceHandle);
 
