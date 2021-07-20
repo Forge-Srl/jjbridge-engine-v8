@@ -274,7 +274,7 @@ public class NativeLibraryLoader
 
         File tempDir = assetLoader.getTempDir();
         File tempFile = new File(tempDir, fileName);
-        try (FileInputStream assetAsStream = assetLoader.getAssetAsStream(fileName))
+        try (InputStream assetAsStream = assetLoader.getAssetAsStream(fileName))
         {
             Files.copy(assetAsStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
@@ -305,6 +305,6 @@ public class NativeLibraryLoader
          * @param fileName the name of the asset
          * @return the stream of the asset
          */
-        FileInputStream getAssetAsStream(String fileName);
+        InputStream getAssetAsStream(String fileName);
     }
 }
