@@ -9,7 +9,7 @@ If (-Not (Test-Path "ndk" -PathType Container)) {
     Expand-Archive -Path ndk.zip -DestinationPath ".\ndk"
     Remove-Item ndk.zip
 }
-$ndk_path = Get-ChildItem -Path "ndk" -Depth 0 -Directory | Select-Object -ExpandProperty FullName
+$ndk_path = Get-ChildItem -Path "\ndk" -Depth 0 -Directory | Select-Object -First 1 -ExpandProperty FullName
 Set-Location ".."
 
 If (-Not (Test-Path "target" -PathType Container)) {
