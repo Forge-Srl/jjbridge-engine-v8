@@ -64,7 +64,7 @@ public class RuntimeBenchmarkTest
         arg2String.setValue(stringToCheck);
 
         JSReference functionRef = runtime.newReference(JSType.Function);
-        JSFunction function = runtime.resolveReference(functionRef);
+        JSFunction<?> function = runtime.resolveReference(functionRef);
 
         boolean[] callbackResult = {false, false, false};
         {
@@ -74,7 +74,7 @@ public class RuntimeBenchmarkTest
                 callbackResult[2] = ((JSString) runtime.resolveReference(arguments[1])).getValue().equals(stringToCheck);
 
                 JSReference reference = runtime.newReference(JSType.Integer);
-                ((JSInteger) runtime.resolveReference(reference)).setValue(numberToCheck);
+                runtime.<JSInteger>resolveReference(reference).setValue(numberToCheck);
                 return reference;
             });
         }
@@ -83,7 +83,7 @@ public class RuntimeBenchmarkTest
         assertTrue(callbackResult[0]);
         assertTrue(callbackResult[1]);
         assertTrue(callbackResult[2]);
-        assertEquals(numberToCheck, (long) ((JSInteger) runtime.resolveReference(functionResult)).getValue());
+        assertEquals(numberToCheck, runtime.<JSInteger>resolveReference(functionResult).getValue());
 
         function.setFunction(arguments -> {
             JSReference reference = runtime.newReference(JSType.Undefined);
@@ -97,7 +97,7 @@ public class RuntimeBenchmarkTest
 
         JSReference funRef = runtime.newReference(JSType.Function);
         for (int i = 0; i < 1000; i++) {
-            JSFunction fun = runtime.resolveReference(functionRef);
+            JSFunction<?> fun = runtime.resolveReference(functionRef);
             fun.setFunction(arguments -> {
                 callbackResult[0] = false;
                 return runtime.newReference(JSType.Null);

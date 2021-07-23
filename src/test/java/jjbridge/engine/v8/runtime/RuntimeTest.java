@@ -142,9 +142,9 @@ public class RuntimeTest {
     public void booleanResultScript() {
         try (JSRuntime runtime = engine.newRuntime()) {
             JSReference result = runtime.executeScript("true");
-            assertEquals(true, ((JSBoolean)runtime.resolveReference(result)).getValue());
+            assertEquals(true, runtime.<JSBoolean>resolveReference(result).getValue());
             result = runtime.executeScript("false");
-            assertEquals(false, ((JSBoolean)runtime.resolveReference(result)).getValue());
+            assertEquals(false, runtime.<JSBoolean>resolveReference(result).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -154,7 +154,7 @@ public class RuntimeTest {
     public void integerResultScript() {
         try (JSRuntime runtime = engine.newRuntime()) {
             JSReference result = runtime.executeScript("150");
-            assertEquals(150, (long) ((JSInteger)runtime.resolveReference(result)).getValue());
+            assertEquals(150L, runtime.<JSInteger>resolveReference(result).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -164,7 +164,7 @@ public class RuntimeTest {
     public void doubleResultScript() {
         try (JSRuntime runtime = engine.newRuntime()) {
             JSReference result = runtime.executeScript("-12.985641");
-            assertEquals(-12.985641, ((JSFloat)runtime.resolveReference(result)).getValue(), 0);
+            assertEquals(-12.985641, runtime.<JSFloat>resolveReference(result).getValue(), 0);
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -176,11 +176,11 @@ public class RuntimeTest {
             String startingString = "S0me kiͷƊ Őf Ѽœiŗd teχt: #‡\u08ADऴቯ ※ℵ◆⠍⾞ゟㅚ\\n\\r\t \uD83D\uDE28⿕\uD83D\uDCAB";
             String expectedString = "S0me kiͷƊ Őf Ѽœiŗd teχt: #‡\u08ADऴቯ ※ℵ◆⠍⾞ゟㅚ\n\r\t \uD83D\uDE28⿕\uD83D\uDCAB";
             JSReference result = runtime.executeScript("'"+startingString+"'");
-            assertEquals(expectedString, ((JSString)runtime.resolveReference(result)).getValue());
+            assertEquals(expectedString, runtime.<JSString>resolveReference(result).getValue());
             result = runtime.executeScript("\""+startingString+"\"");
-            assertEquals(expectedString, ((JSString)runtime.resolveReference(result)).getValue());
+            assertEquals(expectedString, runtime.<JSString>resolveReference(result).getValue());
             result = runtime.executeScript("`"+startingString+"`");
-            assertEquals(expectedString, ((JSString)runtime.resolveReference(result)).getValue());
+            assertEquals(expectedString, runtime.<JSString>resolveReference(result).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -195,10 +195,10 @@ public class RuntimeTest {
             String expectedString = "ASD IIİİ ASD";
 
             JSReference result = runtime.executeScript("'"+startingString+"'.toLocaleUpperCase('tr-TR')");
-            assertEquals(expectedString, ((JSString)runtime.resolveReference(result)).getValue());
+            assertEquals(expectedString, runtime.<JSString>resolveReference(result).getValue());
             // Just a double check that everything is ok
             result = runtime.executeScript("'"+startingString+"'.toLocaleUpperCase('tr-TR') === '"+expectedString+"'");
-            assertTrue(((JSBoolean)runtime.resolveReference(result)).getValue());
+            assertTrue(runtime.<JSBoolean>resolveReference(result).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -211,7 +211,7 @@ public class RuntimeTest {
             JSObject<?> object = runtime.resolveReference(result);
 
             JSReference xx = object.get("xx");
-            assertEquals(1, (long) ((JSInteger)runtime.resolveReference(xx)).getValue());
+            assertEquals(1L, runtime.<JSInteger>resolveReference(xx).getValue());
 
             JSReference yy = object.get("yy");
             JSObject<?> yyObject = runtime.resolveReference(yy);
@@ -230,7 +230,7 @@ public class RuntimeTest {
         try (JSRuntime runtime = engine.newRuntime()) {
             JSReference result = runtime.executeScript("new Date(Date.UTC(6403, 3, 14, 7, 58, 33, 197))");
             Date expected = simpleDateFormat.parse("6403-04-14T07:58:33.197Z");
-            assertEquals(expected, ((JSDate<?>) runtime.resolveReference(result)).getValue());
+            assertEquals(expected, runtime.<JSDate<?>>resolveReference(result).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -262,9 +262,9 @@ public class RuntimeTest {
             JSReference r1 = runtime.newReference(JSType.Integer);
             JSReference r2 = runtime.newReference(JSType.Float);
             JSReference r3 = runtime.newReference(JSType.String);
-            ((JSInteger)runtime.resolveReference(r1)).setValue(i);
-            ((JSFloat)runtime.resolveReference(r2)).setValue(j);
-            ((JSString)runtime.resolveReference(r3)).setValue(k);
+            runtime.<JSInteger>resolveReference(r1).setValue(i);
+            runtime.<JSFloat>resolveReference(r2).setValue(j);
+            runtime.<JSString>resolveReference(r3).setValue(k);
 
             JSReference function = runtime.executeScript("let i = 0; (i,j,k) => (i * 1000 + j * 100) + k");
             JSFunction<?> functionResult = runtime.resolveReference(function);
@@ -305,12 +305,12 @@ public class RuntimeTest {
             JSFunction<?> functionResult = runtime.resolveReference(function);
 
             JSFunction<?> k = runtime.resolveReference(functionResult.get("k"));
-            assertEquals(2, (long) ((JSInteger)runtime.resolveReference(k.invoke(function))).getValue());
+            assertEquals(2L, runtime.<JSInteger>resolveReference(k.invoke(function)).getValue());
 
             JSReference reference = runtime.newReference(JSType.Integer);
-            ((JSInteger) runtime.resolveReference(reference)).setValue(1000L);
+            runtime.<JSInteger>resolveReference(reference).setValue(1000L);
             JSObject<?> a = runtime.resolveReference(functionResult.invokeConstructor(reference));
-            assertEquals(1000, (long) ((JSInteger)runtime.resolveReference(a.get("value"))).getValue());
+            assertEquals(1000L, runtime.<JSInteger>resolveReference(a.get("value")).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -436,7 +436,7 @@ public class RuntimeTest {
             JSFloat doubleResult = runtime.resolveReference(result);
 
             doubleResult.setValue(3456.0);
-            assertEquals(3456, (long) ((JSInteger) runtime.resolveReference(result, TypeResolution.Actual)).getValue());
+            assertEquals(3456L, runtime.<JSInteger>resolveReference(result, TypeResolution.Actual).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -512,7 +512,7 @@ public class RuntimeTest {
 
             {
                 JSReference bool = runtime.newReference(JSType.Boolean);
-                ((JSBoolean) runtime.resolveReference(bool)).setValue(true);
+                runtime.<JSBoolean>resolveReference(bool).setValue(true);
                 object.set("propertyName", bool);
             }
 
@@ -560,13 +560,13 @@ public class RuntimeTest {
 
             {
                 JSReference bool = runtime.newReference(JSType.Boolean);
-                ((JSBoolean) runtime.resolveReference(bool)).setValue(true);
+                runtime.<JSBoolean>resolveReference(bool).setValue(true);
                 object.set(0, bool);
             }
 
             assertEquals(1, object.size());
             property = object.get(0);
-            assertEquals(true, ((JSBoolean)runtime.resolveReference(property)).getValue());
+            assertEquals(true, runtime.<JSBoolean>resolveReference(property).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -576,7 +576,7 @@ public class RuntimeTest {
     public void referencesToSameHandleAreEqual() {
         try (JSRuntime runtime = engine.newRuntime()) {
             JSReference item = runtime.newReference(JSType.Integer);
-            ((JSInteger)runtime.resolveReference(item)).setValue(150L);
+            runtime.<JSInteger>resolveReference(item).setValue(150L);
 
             JSReference arrayRef = runtime.newReference(JSType.Array);
             JSArray<?> array = runtime.resolveReference(arrayRef);
@@ -623,10 +623,10 @@ public class RuntimeTest {
                 function.setFunction(arguments -> {
                     callbackResult[0] = true;
                     callbackResult[1] = arguments[0].getNominalType() == JSType.Null;
-                    callbackResult[2] = ((JSString) runtime.resolveReference(arguments[1])).getValue().equals(stringToCheck);
+                    callbackResult[2] = runtime.<JSString>resolveReference(arguments[1]).getValue().equals(stringToCheck);
 
                     JSReference reference = runtime.newReference(JSType.Integer);
-                    ((JSInteger) runtime.resolveReference(reference)).setValue(numberToCheck);
+                    runtime.<JSInteger>resolveReference(reference).setValue(numberToCheck);
                     return reference;
                 });
             }
@@ -635,13 +635,13 @@ public class RuntimeTest {
             assertTrue(callbackResult[0]);
             assertTrue(callbackResult[1]);
             assertTrue(callbackResult[2]);
-            assertEquals(numberToCheck, (long) ((JSInteger)runtime.resolveReference(functionResult)).getValue());
+            assertEquals(numberToCheck, runtime.<JSInteger>resolveReference(functionResult).getValue());
 
             functionResult = function.invoke(functionRef, arg1, arg2);
             assertTrue(callbackResult[0]);
             assertTrue(callbackResult[1]);
             assertTrue(callbackResult[2]);
-            assertEquals(numberToCheck, (long) ((JSInteger)runtime.resolveReference(functionResult)).getValue());
+            assertEquals(numberToCheck, runtime.<JSInteger>resolveReference(functionResult).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -666,7 +666,7 @@ public class RuntimeTest {
                 function.invoke(functionRef);
                 fail();
             } catch (ExecutionException e) {
-                assertEquals("Error: java exception in callback [" + innerException.toString() + "].", e.getMessage());
+                assertEquals("Error: java exception in callback [" + innerException + "].", e.getMessage());
             }
 
         } catch (Exception e) {
@@ -685,10 +685,10 @@ public class RuntimeTest {
             assertEquals(func1.getActualType(), JSType.Function);
 
             JSReference funcX = runtime.newReference(JSType.Function);
-            ((JSFunction<?>) runtime.resolveReference(funcX)).setFunction(jsReferences -> {
+            runtime.<JSFunction<?>>resolveReference(funcX).setFunction(jsReferences -> {
                 JSInteger value = runtime.resolveReference(jsReferences[0]);
                 JSReference result = runtime.newReference(JSType.Integer);
-                ((JSInteger) runtime.resolveReference(result)).setValue(value.getValue() + 1000);
+                runtime.<JSInteger>resolveReference(result).setValue(value.getValue() + 1000);
 
                 JSReference func2 = runtime.executeScript("script2", script2);
                 assertEquals(func2.getActualType(), JSType.Function);
@@ -696,15 +696,15 @@ public class RuntimeTest {
                 JSReference func3 = runtime.executeScript("script3", script3);
                 assertEquals(func3.getActualType(), JSType.Function);
 
-                return ((JSFunction<?>) runtime.resolveReference(func3)).invoke(func3, func2, result);
+                return runtime.<JSFunction<?>>resolveReference(func3).invoke(func3, func2, result);
             });
             assertEquals(funcX.getActualType(), JSType.Function);
 
             JSReference number = runtime.newReference(JSType.Integer);
-            ((JSInteger) runtime.resolveReference(number)).setValue(66L);
+            runtime.<JSInteger>resolveReference(number).setValue(66L);
 
-            JSReference result = ((JSFunction<?>) runtime.resolveReference(func1)).invoke(func1, funcX, number);
-            assertEquals(50117, (long) ((JSInteger) runtime.resolveReference(result)).getValue());
+            JSReference result = runtime.<JSFunction<?>>resolveReference(func1).invoke(func1, funcX, number);
+            assertEquals(50117L, runtime.<JSInteger>resolveReference(result).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -718,7 +718,7 @@ public class RuntimeTest {
             result = runtime.executeScript("let other = variableName + 10");
             assertTrue(runtime.resolveReference(result) instanceof JSUndefined);
             result = runtime.executeScript("`other: ${other}`");
-            assertEquals("other: 15", ((JSString) runtime.resolveReference(result)).getValue());
+            assertEquals("other: 15", runtime.<JSString>resolveReference(result).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -728,13 +728,13 @@ public class RuntimeTest {
     public void referenceIsPersistent() {
         try (JSRuntime runtime = engine.newRuntime()) {
             JSReference result = runtime.executeScript("5");
-            assertEquals(5, (long) ((JSInteger)runtime.resolveReference(result)).getValue());
-            assertEquals(5, (long) ((JSInteger)runtime.resolveReference(result)).getValue());
+            assertEquals(5L, runtime.<JSInteger>resolveReference(result).getValue());
+            assertEquals(5L, runtime.<JSInteger>resolveReference(result).getValue());
 
             JSReference result2 = runtime.executeScript("10");
-            assertEquals(10, (long) ((JSInteger)runtime.resolveReference(result2)).getValue());
+            assertEquals(10L, runtime.<JSInteger>resolveReference(result2).getValue());
 
-            assertEquals(5, (long) ((JSInteger)runtime.resolveReference(result)).getValue());
+            assertEquals(5L, runtime.<JSInteger>resolveReference(result).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -750,7 +750,7 @@ public class RuntimeTest {
             // 1. Create some references in a specific thread (even different from the test one)
             Thread t = new Thread(() -> {
                 result[0] = runtime.newReference(JSType.String);
-                ((JSString)runtime.resolveReference(result[0])).setValue(expectedResult1);
+                runtime.<JSString>resolveReference(result[0]).setValue(expectedResult1);
 
                 result[1] = runtime.newReference(JSType.Integer);
             });
@@ -766,7 +766,7 @@ public class RuntimeTest {
 
                 JSInteger integerResult = runtime.resolveReference(result[1]);
                 Thread p = new Thread(() -> {
-                    actualValue[0] = ((JSString) runtime.resolveReference(result[0])).getValue();
+                    actualValue[0] = runtime.<JSString>resolveReference(result[0]).getValue();
 
                     integerResult.setValue(randomValue);
                     actualValue[1] = integerResult.getValue().toString();
@@ -855,9 +855,9 @@ public class RuntimeTest {
                             service.schedule(() -> {
                                 JSFunction<?> f = runtime.resolveReference(innerFunc);
                                 JSReference input = runtime.newReference(JSType.Integer);
-                                ((JSInteger) runtime.resolveReference(input)).setValue((long) finalI);
+                                runtime.<JSInteger>resolveReference(input).setValue((long) finalI);
                                 JSReference output = f.invoke(innerFunc, input);
-                                results[finalI] = ((JSInteger) runtime.resolveReference(output)).getValue();
+                                results[finalI] = runtime.<JSInteger>resolveReference(output).getValue();
                             }, i + 1, TimeUnit.SECONDS);
                         }
 
@@ -869,7 +869,7 @@ public class RuntimeTest {
             }
 
             JSReference outerFunc = runtime.executeScript("(func) => func()");
-            ((JSFunction<?>)runtime.resolveReference(outerFunc)).invoke(outerFunc, threadFunc);
+            runtime.<JSFunction<?>>resolveReference(outerFunc).invoke(outerFunc, threadFunc);
             Thread.sleep(6500);
 
             assertArrayEquals(results, new Long[] {2L,3L,4L,5L,6L});
@@ -888,15 +888,15 @@ public class RuntimeTest {
         try (JSRuntime runtime = engine.newRuntime()) {
             JSObject<?> global = runtime.globalObject();
             JSReference myPropertyRef = runtime.newReference(JSType.Integer);
-            ((JSInteger) runtime.resolveReference(myPropertyRef)).setValue(myPropertyValue);
+            runtime.<JSInteger>resolveReference(myPropertyRef).setValue(myPropertyValue);
             global.set(myPropertyName, myPropertyRef);
 
             JSReference result = runtime.executeScript("function x(k) { return "+myPropertyName+" + k; } x("+k+")");
-            assertEquals(myPropertyValue + k, (long) ((JSInteger)runtime.resolveReference(result)).getValue());
+            assertEquals(myPropertyValue + k, runtime.<JSInteger>resolveReference(result).getValue());
 
             runtime.executeScript("function set(k) { "+myPropertyName+" = k; } set("+k+")");
             myPropertyRef = global.get(myPropertyName);
-            assertEquals(k, (long) ((JSInteger)runtime.resolveReference(myPropertyRef)).getValue());
+            assertEquals(k, runtime.<JSInteger>resolveReference(myPropertyRef).getValue());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -920,7 +920,7 @@ public class RuntimeTest {
         try(JSRuntime runtime = new Runtime(v8, runtimeHandle, referenceMonitor)) {
             for (int i = 0; i < garbageCollected.length; i++) {
                 JSReference ref = runtime.newReference(JSType.Integer);
-                ((JSInteger)runtime.resolveReference(ref)).setValue((long) i);
+                runtime.<JSInteger>resolveReference(ref).setValue((long) i);
             }
 
             MemoryTimeWaster.waste(1000000);
