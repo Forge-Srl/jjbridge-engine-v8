@@ -19,6 +19,7 @@ class AccessorsFactory
 {
     private final V8 v8;
     private final long runtimeHandle;
+    private final Object lock = new Object();
     private ReferenceTypeGetter referenceTypeGetter;
     private EqualityChecker equalityChecker;
 
@@ -32,7 +33,13 @@ class AccessorsFactory
     {
         if (referenceTypeGetter == null)
         {
-            referenceTypeGetter = handle -> (JSType) this.v8.getReferenceType(this.runtimeHandle, handle);
+            referenceTypeGetter = handle ->
+            {
+                synchronized (lock)
+                {
+                    return (JSType) this.v8.getReferenceType(this.runtimeHandle, handle);
+                }
+            };
         }
         return referenceTypeGetter;
     }
@@ -41,61 +48,126 @@ class AccessorsFactory
     {
         if (equalityChecker == null)
         {
-            equalityChecker = (firstHandle, secondHandle) -> this.v8.equalsValue(this.runtimeHandle, firstHandle,
-                    secondHandle);
+            equalityChecker = (firstHandle, secondHandle) ->
+            {
+                synchronized (lock)
+                {
+                    return this.v8.equalsValue(this.runtimeHandle, firstHandle, secondHandle);
+                }
+            };
         }
         return equalityChecker;
     }
 
     protected ValueGetter<Boolean> booleanGetter(long handle)
     {
-        return () -> this.v8.getBooleanValue(this.runtimeHandle, handle);
+        return () ->
+        {
+            synchronized (lock)
+            {
+                return this.v8.getBooleanValue(this.runtimeHandle, handle);
+            }
+        };
     }
 
     protected ValueSetter<Boolean> booleanSetter(long handle)
     {
-        return value -> this.v8.setBooleanValue(this.runtimeHandle, handle, value);
+        return value ->
+        {
+            synchronized (lock)
+            {
+                this.v8.setBooleanValue(this.runtimeHandle, handle, value);
+            }
+        };
     }
 
     protected ValueGetter<Long> longGetter(long handle)
     {
-        return () -> this.v8.getLongValue(this.runtimeHandle, handle);
+        return () ->
+        {
+            synchronized (lock)
+            {
+                return this.v8.getLongValue(this.runtimeHandle, handle);
+            }
+        };
     }
 
     protected ValueSetter<Long> longSetter(long handle)
     {
-        return value -> this.v8.setLongValue(this.runtimeHandle, handle, value);
+        return value ->
+        {
+            synchronized (lock)
+            {
+                this.v8.setLongValue(this.runtimeHandle, handle, value);
+            }
+        };
     }
 
     protected ValueGetter<Double> doubleGetter(long handle)
     {
-        return () -> this.v8.getDoubleValue(this.runtimeHandle, handle);
+        return () ->
+        {
+            synchronized (lock)
+            {
+                return this.v8.getDoubleValue(this.runtimeHandle, handle);
+            }
+        };
     }
 
     protected ValueSetter<Double> doubleSetter(long handle)
     {
-        return value -> this.v8.setDoubleValue(this.runtimeHandle, handle, value);
+        return value ->
+        {
+            synchronized (lock)
+            {
+                this.v8.setDoubleValue(this.runtimeHandle, handle, value);
+            }
+        };
     }
 
     protected ValueGetter<String> stringGetter(long handle)
     {
-        return () -> this.v8.getStringValue(this.runtimeHandle, handle);
+        return () ->
+        {
+            synchronized (lock)
+            {
+                return this.v8.getStringValue(this.runtimeHandle, handle);
+            }
+        };
     }
 
     protected ValueSetter<String> stringSetter(long handle)
     {
-        return value -> this.v8.setStringValue(this.runtimeHandle, handle, value);
+        return value ->
+        {
+            synchronized (lock)
+            {
+                this.v8.setStringValue(this.runtimeHandle, handle, value);
+            }
+        };
     }
 
     @SuppressWarnings("unchecked")
     protected <T> ValueGetter<T> externalGetter(long handle)
     {
-        return () -> (T) this.v8.getExternalValue(this.runtimeHandle, handle);
+        return () ->
+        {
+            synchronized (lock)
+            {
+                return (T) this.v8.getExternalValue(this.runtimeHandle, handle);
+            }
+        };
     }
 
     protected <T> ValueSetter<T> externalSetter(long handle)
     {
-        return value -> this.v8.setExternalValue(this.runtimeHandle, handle, value);
+        return value ->
+        {
+            synchronized (lock)
+            {
+                this.v8.setExternalValue(this.runtimeHandle, handle, value);
+            }
+        };
     }
 
     // Must be used with synchronized due to SpotBugs STCAL_INVOKE_ON_STATIC_DATE_FORMAT_INSTANCE. See also:
@@ -108,11 +180,17 @@ class AccessorsFactory
     {
         return () ->
         {
+            String dateTimeString;
+            synchronized (lock)
+            {
+                dateTimeString = this.v8.getDateTimeString(this.runtimeHandle, handle);
+            }
+
             synchronized (simpleDateFormat)
             {
                 try
                 {
-                    return simpleDateFormat.parse(this.v8.getDateTimeString(this.runtimeHandle, handle));
+                    return simpleDateFormat.parse(dateTimeString);
                 }
                 catch (ParseException e)
                 {
@@ -126,22 +204,42 @@ class AccessorsFactory
     {
         return value ->
         {
+            String format;
             synchronized (simpleDateFormat)
             {
-                this.v8.setDateTime(this.runtimeHandle, handle, simpleDateFormat.format(value));
+                format = simpleDateFormat.format(value);
+            }
+
+            synchronized (lock)
+            {
+                this.v8.setDateTime(this.runtimeHandle, handle, format);
             }
         };
     }
 
     protected ObjectPropertyGetter<Reference> propertyGetter(long handle)
     {
-        return name -> (Reference) this.v8.getObjectProperty(this.runtimeHandle, handle, name, referenceTypeGetter(),
-                equalityChecker());
+        return name ->
+        {
+            ReferenceTypeGetter referenceTypeGetter = referenceTypeGetter();
+            EqualityChecker equalityChecker = equalityChecker();
+            synchronized (lock)
+            {
+                return (Reference) this.v8.getObjectProperty(this.runtimeHandle, handle, name, referenceTypeGetter,
+                        equalityChecker);
+            }
+        };
     }
 
     protected ObjectPropertySetter<Reference> propertySetter(long handle)
     {
-        return (name, value) -> this.v8.setObjectProperty(this.runtimeHandle, handle, name, value.handle);
+        return (name, value) ->
+        {
+            synchronized (lock)
+            {
+                this.v8.setObjectProperty(this.runtimeHandle, handle, name, value.handle);
+            }
+        };
     }
 
     protected ArrayDataGetter<Reference> arrayDataGetter(long handle)
@@ -151,21 +249,35 @@ class AccessorsFactory
             @Override
             public int getSize()
             {
-                return v8.getArraySize(runtimeHandle, handle);
+                synchronized (lock)
+                {
+                    return v8.getArraySize(runtimeHandle, handle);
+                }
             }
 
             @Override
             public Reference getItemByPosition(int position)
             {
-                return (Reference) v8.getElementByPosition(runtimeHandle, handle, position, referenceTypeGetter(),
-                        equalityChecker());
+                ReferenceTypeGetter referenceTypeGetter = referenceTypeGetter();
+                EqualityChecker equalityChecker = equalityChecker();
+                synchronized (lock)
+                {
+                    return (Reference) v8.getElementByPosition(runtimeHandle, handle, position, referenceTypeGetter,
+                            equalityChecker);
+                }
             }
         };
     }
 
     protected ArrayDataSetter<Reference> arrayDataSetter(long handle)
     {
-        return (position, value) -> this.v8.setElementByPosition(this.runtimeHandle, handle, position, value.handle);
+        return (position, value) ->
+        {
+            synchronized (lock)
+            {
+                this.v8.setElementByPosition(this.runtimeHandle, handle, position, value.handle);
+            }
+        };
     }
 
     protected FunctionInvoker<Reference> functionInvoker(long handle)
@@ -185,22 +297,41 @@ class AccessorsFactory
             @Override
             public Reference invokeFunction(Reference receiver, Reference[] args)
             {
-                return (Reference) v8.invokeFunction(runtimeHandle, handle, receiver.handle, referenceToHandle(args),
-                        referenceTypeGetter(), equalityChecker());
+                long[] argHandles = referenceToHandle(args);
+                ReferenceTypeGetter referenceTypeGetter = referenceTypeGetter();
+                EqualityChecker equalityChecker = equalityChecker();
+                synchronized (lock)
+                {
+                    return (Reference) v8.invokeFunction(runtimeHandle, handle, receiver.handle, argHandles,
+                            referenceTypeGetter, equalityChecker);
+                }
             }
 
             @Override
             public Reference invokeConstructor(Reference[] args)
             {
-                return (Reference) v8.invokeConstructor(runtimeHandle, handle, referenceToHandle(args),
-                        referenceTypeGetter(), equalityChecker());
+                long[] argHandles = referenceToHandle(args);
+                ReferenceTypeGetter referenceTypeGetter = referenceTypeGetter();
+                EqualityChecker equalityChecker = equalityChecker();
+                synchronized (lock)
+                {
+                    return (Reference) v8.invokeConstructor(runtimeHandle, handle, argHandles, referenceTypeGetter,
+                            equalityChecker);
+                }
             }
         };
     }
 
     protected FunctionSetter<Reference> functionSetter(long handle)
     {
-        return callback -> this.v8.setFunctionHandler(this.runtimeHandle, handle, callback, referenceTypeGetter(),
-                equalityChecker());
+        return callback ->
+        {
+            ReferenceTypeGetter referenceTypeGetter = referenceTypeGetter();
+            EqualityChecker equalityChecker = equalityChecker();
+            synchronized (lock)
+            {
+                this.v8.setFunctionHandler(this.runtimeHandle, handle, callback, referenceTypeGetter, equalityChecker);
+            }
+        };
     }
 }

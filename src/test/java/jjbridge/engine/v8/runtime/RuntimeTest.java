@@ -744,8 +744,8 @@ public class RuntimeTest {
     public void referenceIsAccessibleFromDifferentThreads() {
         try (JSRuntime runtime = engine.newRuntime()) {
             JSReference[] result = new JSReference[2];
-            java.lang.String[] actualValue = new java.lang.String[2];
-            java.lang.String expectedResult1 = "some value";
+            String[] actualValue = new String[2];
+            String expectedResult1 = "some value";
 
             // 1. Create some references in a specific thread (even different from the test one)
             Thread t = new Thread(() -> {
@@ -777,6 +777,60 @@ public class RuntimeTest {
                 assertEquals(expectedResult1, actualValue[0]);
                 assertEquals(randomValue+"", actualValue[1]);
             }
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void referencesAreEqualsInDifferentThreads() {
+        final String commonKey = "common";
+        final int threadCount = 150;
+        final int iterationsCount = 2000;
+
+        try (JSRuntime runtime = engine.newRuntime()) {
+            JSReference commonObjectRef = runtime.newReference(JSType.Object);
+            JSObject<?> commonObject = runtime.resolveReference(commonObjectRef);
+            JSReference reference = runtime.newReference(JSType.Integer);
+            commonObject.set(commonKey, reference);
+            assertEquals(reference, commonObject.get(commonKey));
+            assertEquals(reference, runtime.<JSObject<?>>resolveReference(commonObjectRef).get(commonKey));
+
+            Thread[] threads = new Thread[threadCount];
+            Exception[][] errors = new Exception[threadCount][];
+            for (int i = 0; i < threadCount; i++)
+            {
+                int finalI = i;
+                threads[i] = new Thread(() -> {
+                    errors[finalI] = new Exception[iterationsCount];
+                    for (int n = 0; n < iterationsCount; n++)
+                    {
+                        try {
+                            assertEquals(reference, runtime.<JSObject<?>>resolveReference(commonObjectRef).get(commonKey));
+                            assertEquals(reference, commonObject.get(commonKey));
+                        } catch (Exception e) {
+                            errors[finalI][n] = e;
+                        }
+                    }
+                }, "jsobj_" + i);
+            }
+
+            for (Thread t : threads)
+            {
+                t.start();
+            }
+            for (int i = 0; i < threads.length; i++)
+            {
+                Thread t = threads[i];
+                t.join();
+                for (Exception exception : errors[i])
+                {
+                    assertNull(exception);
+                }
+            }
+
+            assertEquals(reference, commonObject.get(commonKey));
+            assertEquals(reference, runtime.<JSObject<?>>resolveReference(commonObjectRef).get(commonKey));
         } catch (Exception e) {
             fail(e.getMessage());
         }

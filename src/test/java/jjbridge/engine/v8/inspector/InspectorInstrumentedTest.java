@@ -19,7 +19,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -85,7 +85,7 @@ public class InspectorInstrumentedTest {
         V8Engine engine = new V8Engine();
         runtime = engine.newRuntime();
 
-        assertTimeout(Duration.ofSeconds(5), () -> {
+        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
             try {
                 inspector = engine.newInspector(port);
                 inspectorClient = new InspectorClient(new URI("ws://127.0.0.1:" + port));
@@ -164,7 +164,7 @@ public class InspectorInstrumentedTest {
         waitBeforeScript.await();
         String scriptSource = "class AAA { str() { console.log('AAA'); return 1000 } }; new AAA()";
         JSReference script1 = runtime.executeScript(scriptSource);
-        JSObject aaa = runtime.resolveReference(script1);
+        JSObject<?> aaa = runtime.resolveReference(script1);
 
         inspectorClient.sendAndExpect(
                 "{\"id\":8,\"method\":\"Debugger.getScriptSource\",\"params\":{\"scriptId\":\"3\"}}",
