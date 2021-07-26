@@ -51,8 +51,12 @@ public class Runtime extends JSBaseRuntime<Reference>
     @Override
     protected JSObject<Reference> getGlobalObject()
     {
-        Reference ref = (Reference) this.v8.globalObjectReference(this.runtimeHandle,
-                this.accessorsFactory.referenceTypeGetter(), this.accessorsFactory.equalityChecker());
+        Reference ref;
+        synchronized (this.v8.getLock())
+        {
+            ref = (Reference) this.v8.globalObjectReference(this.runtimeHandle,
+                    this.accessorsFactory.referenceTypeGetter(), this.accessorsFactory.equalityChecker());
+        }
         return resolveReference(ref);
     }
 
@@ -107,55 +111,61 @@ public class Runtime extends JSBaseRuntime<Reference>
     @Override
     protected Reference createNewReference(JSType type)
     {
-        Reference reference = (Reference) this.v8.newValue(this.runtimeHandle, type,
-                this.accessorsFactory.referenceTypeGetter(), this.accessorsFactory.equalityChecker());
-
-        switch (type)
+        synchronized (this.v8.getLock())
         {
-            case Undefined:
-                this.v8.initUndefinedValue(this.runtimeHandle, reference.handle);
-                break;
-            case Null:
-                this.v8.initNullValue(this.runtimeHandle, reference.handle);
-                break;
-            case Boolean:
-                this.v8.initBooleanValue(this.runtimeHandle, reference.handle);
-                break;
-            case Integer:
-                this.v8.initLongValue(this.runtimeHandle, reference.handle);
-                break;
-            case Float:
-                this.v8.initDoubleValue(this.runtimeHandle, reference.handle);
-                break;
-            case String:
-                this.v8.initStringValue(this.runtimeHandle, reference.handle);
-                break;
-            case External:
-                this.v8.initExternalValue(this.runtimeHandle, reference.handle);
-                break;
-            case Object:
-                this.v8.initObjectValue(this.runtimeHandle, reference.handle);
-                break;
-            case Date:
-                this.v8.initDateTimeValue(this.runtimeHandle, reference.handle);
-                break;
-            case Array:
-                this.v8.initArrayValue(this.runtimeHandle, reference.handle);
-                break;
-            case Function:
-                this.v8.initFunctionValue(this.runtimeHandle, reference.handle);
-                break;
-            default:
-                throw new UnsupportedOperationException("Cannot create reference of type " + type.name());
+            Reference reference = (Reference) this.v8.newValue(this.runtimeHandle, type,
+                    this.accessorsFactory.referenceTypeGetter(), this.accessorsFactory.equalityChecker());
+
+            switch (type)
+            {
+                case Undefined:
+                    this.v8.initUndefinedValue(this.runtimeHandle, reference.handle);
+                    break;
+                case Null:
+                    this.v8.initNullValue(this.runtimeHandle, reference.handle);
+                    break;
+                case Boolean:
+                    this.v8.initBooleanValue(this.runtimeHandle, reference.handle);
+                    break;
+                case Integer:
+                    this.v8.initLongValue(this.runtimeHandle, reference.handle);
+                    break;
+                case Float:
+                    this.v8.initDoubleValue(this.runtimeHandle, reference.handle);
+                    break;
+                case String:
+                    this.v8.initStringValue(this.runtimeHandle, reference.handle);
+                    break;
+                case External:
+                    this.v8.initExternalValue(this.runtimeHandle, reference.handle);
+                    break;
+                case Object:
+                    this.v8.initObjectValue(this.runtimeHandle, reference.handle);
+                    break;
+                case Date:
+                    this.v8.initDateTimeValue(this.runtimeHandle, reference.handle);
+                    break;
+                case Array:
+                    this.v8.initArrayValue(this.runtimeHandle, reference.handle);
+                    break;
+                case Function:
+                    this.v8.initFunctionValue(this.runtimeHandle, reference.handle);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Cannot create reference of type " + type.name());
+            }
+            return reference;
         }
-        return reference;
     }
 
     @Override
     protected Reference runScript(String name, String script)
     {
-        return (Reference) this.v8.executeScript(this.runtimeHandle, name, script,
-                this.accessorsFactory.referenceTypeGetter(), this.accessorsFactory.equalityChecker());
+        synchronized (this.v8.getLock())
+        {
+            return (Reference) this.v8.executeScript(this.runtimeHandle, name, script,
+                    this.accessorsFactory.referenceTypeGetter(), this.accessorsFactory.equalityChecker());
+        }
     }
 
     @Override

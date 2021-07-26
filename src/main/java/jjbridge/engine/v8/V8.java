@@ -10,6 +10,7 @@ public class V8
 {
     private static final NativeLibraryLoader nativeLibraryLoader = new NativeLibraryLoader();
     private static V8 instance;
+    private final Object lock = new Object();
 
     static
     {
@@ -146,4 +147,9 @@ public class V8
     public native void closeInspector(long inspectorHandle);
 
     public native void onInspectorMessage(long inspectorHandle, String message);
+
+    public Object getLock()
+    {
+        return lock;
+    }
 }

@@ -33,6 +33,7 @@ public class ReferenceTest {
         assertNotEquals(null, reference);
         assertNotEquals(new Reference(handle+3, jsType, referenceTypeGetter, equalityChecker), reference);
         assertNotEquals(new Reference(handle, jsType, h -> null, (aHandle, bHandle) -> false), reference);
+        assertNotEquals(new Object(), reference); // other object not instance of Reference
     }
 
     @Test

@@ -3,6 +3,7 @@ package jjbridge.engine.v8.runtime;
 import jjbridge.api.value.JSType;
 import jjbridge.api.value.strategy.ArrayDataGetter;
 import jjbridge.api.value.strategy.ArrayDataSetter;
+import jjbridge.api.value.strategy.FunctionCallback;
 import jjbridge.api.value.strategy.FunctionInvoker;
 import jjbridge.api.value.strategy.FunctionSetter;
 import jjbridge.api.value.strategy.ObjectPropertyGetter;
@@ -19,7 +20,6 @@ class AccessorsFactory
 {
     private final V8 v8;
     private final long runtimeHandle;
-    private final Object lock = new Object();
     private ReferenceTypeGetter referenceTypeGetter;
     private EqualityChecker equalityChecker;
 
@@ -35,7 +35,7 @@ class AccessorsFactory
         {
             referenceTypeGetter = handle ->
             {
-                synchronized (lock)
+                synchronized (this.v8.getLock())
                 {
                     return (JSType) this.v8.getReferenceType(this.runtimeHandle, handle);
                 }
@@ -50,7 +50,7 @@ class AccessorsFactory
         {
             equalityChecker = (firstHandle, secondHandle) ->
             {
-                synchronized (lock)
+                synchronized (this.v8.getLock())
                 {
                     return this.v8.equalsValue(this.runtimeHandle, firstHandle, secondHandle);
                 }
@@ -63,7 +63,7 @@ class AccessorsFactory
     {
         return () ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 return this.v8.getBooleanValue(this.runtimeHandle, handle);
             }
@@ -74,7 +74,7 @@ class AccessorsFactory
     {
         return value ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 this.v8.setBooleanValue(this.runtimeHandle, handle, value);
             }
@@ -85,7 +85,7 @@ class AccessorsFactory
     {
         return () ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 return this.v8.getLongValue(this.runtimeHandle, handle);
             }
@@ -96,7 +96,7 @@ class AccessorsFactory
     {
         return value ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 this.v8.setLongValue(this.runtimeHandle, handle, value);
             }
@@ -107,7 +107,7 @@ class AccessorsFactory
     {
         return () ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 return this.v8.getDoubleValue(this.runtimeHandle, handle);
             }
@@ -118,7 +118,7 @@ class AccessorsFactory
     {
         return value ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 this.v8.setDoubleValue(this.runtimeHandle, handle, value);
             }
@@ -129,7 +129,7 @@ class AccessorsFactory
     {
         return () ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 return this.v8.getStringValue(this.runtimeHandle, handle);
             }
@@ -140,7 +140,7 @@ class AccessorsFactory
     {
         return value ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 this.v8.setStringValue(this.runtimeHandle, handle, value);
             }
@@ -152,7 +152,7 @@ class AccessorsFactory
     {
         return () ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 return (T) this.v8.getExternalValue(this.runtimeHandle, handle);
             }
@@ -163,7 +163,7 @@ class AccessorsFactory
     {
         return value ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 this.v8.setExternalValue(this.runtimeHandle, handle, value);
             }
@@ -181,7 +181,7 @@ class AccessorsFactory
         return () ->
         {
             String dateTimeString;
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 dateTimeString = this.v8.getDateTimeString(this.runtimeHandle, handle);
             }
@@ -210,7 +210,7 @@ class AccessorsFactory
                 format = simpleDateFormat.format(value);
             }
 
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 this.v8.setDateTime(this.runtimeHandle, handle, format);
             }
@@ -223,7 +223,7 @@ class AccessorsFactory
         {
             ReferenceTypeGetter referenceTypeGetter = referenceTypeGetter();
             EqualityChecker equalityChecker = equalityChecker();
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 return (Reference) this.v8.getObjectProperty(this.runtimeHandle, handle, name, referenceTypeGetter,
                         equalityChecker);
@@ -235,7 +235,7 @@ class AccessorsFactory
     {
         return (name, value) ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 this.v8.setObjectProperty(this.runtimeHandle, handle, name, value.handle);
             }
@@ -249,7 +249,7 @@ class AccessorsFactory
             @Override
             public int getSize()
             {
-                synchronized (lock)
+                synchronized (v8.getLock())
                 {
                     return v8.getArraySize(runtimeHandle, handle);
                 }
@@ -260,7 +260,7 @@ class AccessorsFactory
             {
                 ReferenceTypeGetter referenceTypeGetter = referenceTypeGetter();
                 EqualityChecker equalityChecker = equalityChecker();
-                synchronized (lock)
+                synchronized (v8.getLock())
                 {
                     return (Reference) v8.getElementByPosition(runtimeHandle, handle, position, referenceTypeGetter,
                             equalityChecker);
@@ -273,7 +273,7 @@ class AccessorsFactory
     {
         return (position, value) ->
         {
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 this.v8.setElementByPosition(this.runtimeHandle, handle, position, value.handle);
             }
@@ -300,7 +300,7 @@ class AccessorsFactory
                 long[] argHandles = referenceToHandle(args);
                 ReferenceTypeGetter referenceTypeGetter = referenceTypeGetter();
                 EqualityChecker equalityChecker = equalityChecker();
-                synchronized (lock)
+                synchronized (v8.getLock())
                 {
                     return (Reference) v8.invokeFunction(runtimeHandle, handle, receiver.handle, argHandles,
                             referenceTypeGetter, equalityChecker);
@@ -313,7 +313,7 @@ class AccessorsFactory
                 long[] argHandles = referenceToHandle(args);
                 ReferenceTypeGetter referenceTypeGetter = referenceTypeGetter();
                 EqualityChecker equalityChecker = equalityChecker();
-                synchronized (lock)
+                synchronized (v8.getLock())
                 {
                     return (Reference) v8.invokeConstructor(runtimeHandle, handle, argHandles, referenceTypeGetter,
                             equalityChecker);
@@ -324,11 +324,11 @@ class AccessorsFactory
 
     protected FunctionSetter<Reference> functionSetter(long handle)
     {
-        return callback ->
+        return (FunctionCallback<Reference> callback) ->
         {
             ReferenceTypeGetter referenceTypeGetter = referenceTypeGetter();
             EqualityChecker equalityChecker = equalityChecker();
-            synchronized (lock)
+            synchronized (this.v8.getLock())
             {
                 this.v8.setFunctionHandler(this.runtimeHandle, handle, callback, referenceTypeGetter, equalityChecker);
             }

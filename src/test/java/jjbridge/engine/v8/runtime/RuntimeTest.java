@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -873,6 +874,61 @@ public class RuntimeTest {
             Thread.sleep(6500);
 
             assertArrayEquals(results, new Long[] {2L,3L,4L,5L,6L});
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void functionCallbackInOtherThread() {
+        try (JSRuntime runtime = engine.newRuntime())
+        {
+            Long[] times = new Long[200];
+            CountDownLatch latch = new CountDownLatch(times.length);
+            String script =
+                    "(action) => {\n" +
+                    "    const results = []\n" +
+                    "    for (let i = 0; i < " + times.length + "; i++) {\n" +
+                    "        action(i, (value) => {results[i] = value})\n" +
+                    "    }\n" +
+                    "    return results\n" +
+                    "}";
+
+            JSReference scriptRef = runtime.executeScript(script);
+            JSReference actionRef = runtime.newReference(JSType.Function);
+            runtime.<JSFunction<?>>resolveReference(actionRef).setFunction(jsReferences -> {
+                long time = (long) (Math.random() * 500) + 50;
+                times[runtime.<JSInteger>resolveReference(jsReferences[0]).getValue().intValue()] = time;
+
+                JSReference funcRef = jsReferences[1];
+                JSFunction<?> func = runtime.resolveReference(funcRef);
+                new Thread(() -> {
+                    try
+                    {
+                        Thread.sleep(time);
+                    } catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                    JSReference valueRef = runtime.newReference(JSType.Integer);
+                    runtime.<JSInteger>resolveReference(valueRef).setValue(time);
+                    func.invoke(funcRef, valueRef);
+                    latch.countDown();
+                }).start();
+
+                return runtime.newReference(JSType.Undefined);
+            });
+
+            JSReference resultRef = runtime.<JSFunction<?>>resolveReference(scriptRef).invoke(scriptRef, actionRef);
+            latch.await();
+
+            JSArray<?> result = runtime.resolveReference(resultRef);
+            for (int i = 0; i < times.length; i++)
+            {
+                assertEquals(times[i], runtime.<JSInteger>resolveReference(result.get(i)).getValue());
+            }
         } catch (Exception e)
         {
             e.printStackTrace();

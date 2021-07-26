@@ -33,6 +33,7 @@ public class AccessorsFactoryTest {
     @BeforeEach
     public void before() {
         factory = new AccessorsFactory(v8, runtimeHandle);
+        lenient().when(v8.getLock()).thenReturn(new Object());
     }
 
     @Test

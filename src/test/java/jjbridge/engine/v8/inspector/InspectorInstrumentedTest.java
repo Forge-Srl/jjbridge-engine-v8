@@ -89,6 +89,7 @@ public class InspectorInstrumentedTest {
             try {
                 inspector = engine.newInspector(port);
                 inspectorClient = new InspectorClient(new URI("ws://127.0.0.1:" + port));
+                System.out.println("Test inspector client created");
             } catch (RuntimeException e) {
                 e.printStackTrace();
                 fail("Connection failed");
@@ -98,12 +99,14 @@ public class InspectorInstrumentedTest {
                 try {
                     Thread.sleep(2500);
                     inspectorClient.connectBlocking();
+                    System.out.println("Test inspector client connected");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             });
 
             inspector.attach(runtime);
+            System.out.println("Inspector attached to runtime");
             t.start();
             t.join();
         });
@@ -117,7 +120,9 @@ public class InspectorInstrumentedTest {
         latch.await();
 
         inspectorClient.closeBlocking();
+        System.out.println("Test inspector client closed");
         inspector.detach();
+        System.out.println("Inspector detached from runtime");
         runtime.close();
     }
 
