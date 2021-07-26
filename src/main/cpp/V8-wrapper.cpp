@@ -61,10 +61,10 @@ extern "C"
     }
 
     JNIEXPORT auto JNICALL
-    JPF(createRuntime)(JNIEnv* env, jobject thiz, jobject referenceMonitor, jobject functionCache,
+    JPF(createRuntime)(JNIEnv* env, jobject thiz, jobject runtime, jobject functionCache,
         jobject typeGetterCache, jobject equalityCheckerCache, jobject externalCache) -> jlong
     {
-        return (new Runtime(env, referenceMonitor, functionCache, typeGetterCache, equalityCheckerCache, externalCache))->getHandle();
+        return (new Runtime(env, runtime, functionCache, typeGetterCache, equalityCheckerCache, externalCache))->getHandle();
     }
 
     JNIEXPORT auto JNICALL

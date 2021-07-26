@@ -2,13 +2,10 @@ package jjbridge.engine.v8.runtime;
 
 import jjbridge.api.runtime.*;
 import jjbridge.api.value.*;
-import jjbridge.api.value.strategy.FunctionCallback;
 import jjbridge.engine.MemoryTimeWaster;
-import jjbridge.engine.utils.Cache;
 import jjbridge.engine.utils.CleanUpAction;
 import jjbridge.engine.utils.NativeReference;
 import jjbridge.engine.utils.ReferenceMonitor;
-import jjbridge.engine.v8.V8;
 import jjbridge.engine.v8.V8Engine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +20,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.spy;
 
 public class RuntimeTest {
     static {
@@ -960,20 +956,15 @@ public class RuntimeTest {
 
     @Test
     public void referencesAreGarbageCollected() {
-        V8 v8 = spy(V8.class);
-        ReferenceMonitorForTest referenceMonitor = new ReferenceMonitorForTest();
-        long runtimeHandle = v8.createRuntime(referenceMonitor, new Cache<FunctionCallback<Reference>>(),
-                new Cache<ReferenceTypeGetter>(), new Cache<EqualityChecker>(), new Cache<>());
-
         boolean[] garbageCollected = new boolean[100];
-
         int[] counter = {0};
+        ReferenceMonitorForTest referenceMonitor = new ReferenceMonitorForTest();
         referenceMonitor.additionalAction = () -> {
             garbageCollected[counter[0]] = true;
             counter[0] += 1;
         };
 
-        try(JSRuntime runtime = new Runtime(v8, runtimeHandle, referenceMonitor)) {
+        try(JSRuntime runtime = engine.newRuntime(referenceMonitor)) {
             for (int i = 0; i < garbageCollected.length; i++) {
                 JSReference ref = runtime.newReference(JSType.Integer);
                 runtime.<JSInteger>resolveReference(ref).setValue((long) i);

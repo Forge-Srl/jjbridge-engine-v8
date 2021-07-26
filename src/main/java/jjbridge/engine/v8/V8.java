@@ -1,15 +1,14 @@
 package jjbridge.engine.v8;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jjbridge.api.inspector.MessageHandler;
 import jjbridge.api.value.JSType;
 import jjbridge.api.value.strategy.FunctionCallback;
 import jjbridge.engine.utils.Cache;
 import jjbridge.engine.utils.NativeLibraryLoader;
-import jjbridge.engine.utils.ReferenceMonitor;
 import jjbridge.engine.v8.runtime.EqualityChecker;
 import jjbridge.engine.v8.runtime.Reference;
 import jjbridge.engine.v8.runtime.ReferenceTypeGetter;
+import jjbridge.engine.v8.runtime.Runtime;
 
 @SuppressWarnings({"checkstyle:MissingJavadocType", "checkstyle:MissingJavadocMethod"})
 public class V8
@@ -48,17 +47,6 @@ public class V8
         nativeLibraryLoader.setAssetLoader(loader);
     }
 
-    @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", justification = "Called by native code")
-    private static void track(long runtimeHandle, Reference reference, ReferenceMonitor<Reference> referenceMonitor)
-    {
-        /*
-         We extract handle value here to avoid further references to object in lambda which will prevent garbage
-         collection.
-        */
-        long handle = reference.handle;
-        referenceMonitor.track(reference, () -> releaseReference_internal(runtimeHandle, handle));
-    }
-
     private static native void setFlags_internal(String flags);
 
     static void setFlags(String[] flags)
@@ -73,18 +61,14 @@ public class V8
 
     private static native boolean initializeV8_internal(String resourcePath);
 
-    private static native void releaseReference_internal(long runtimeHandle, long referenceHandle);
-
-    private native long createRuntime_internal(Object referenceMonitor, Object functionsCache, Object typeGetterCache,
+    private native long createRuntime_internal(Object runtime, Object functionsCache, Object typeGetterCache,
                                                Object equalityCheckerCache, Object externalCache);
 
-    public long createRuntime(ReferenceMonitor<Reference> referenceMonitor,
-                              Cache<FunctionCallback<Reference>> functionsCache,
+    public long createRuntime(Runtime runtime, Cache<FunctionCallback<Reference>> functionsCache,
                               Cache<ReferenceTypeGetter> typeGetterCache, Cache<EqualityChecker> equalityCheckerCache,
                               Cache<Object> externalCache)
     {
-        return createRuntime_internal(referenceMonitor, functionsCache, typeGetterCache, equalityCheckerCache,
-                externalCache);
+        return createRuntime_internal(runtime, functionsCache, typeGetterCache, equalityCheckerCache, externalCache);
     }
 
     private native boolean releaseRuntime_internal(long runtimeHandle);
@@ -92,6 +76,13 @@ public class V8
     public boolean releaseRuntime(long runtimeHandle)
     {
         return releaseRuntime_internal(runtimeHandle);
+    }
+
+    private native void releaseReference_internal(long runtimeHandle, long referenceHandle);
+
+    public void releaseReference(long runtimeHandle, long referenceHandle)
+    {
+        releaseReference_internal(runtimeHandle, referenceHandle);
     }
 
     private native Object getReferenceType_internal(long runtimeHandle, long referenceHandle);

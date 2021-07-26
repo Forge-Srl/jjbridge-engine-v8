@@ -14,8 +14,8 @@ private:
 	JavaVM* _jvm;
 	v8::Platform* _platform;
 
-    const jclass v8Class;
-    const jmethodID v8trackReference;
+    const jclass runtimeClass;
+    const jmethodID runtimeTrackReference;
 
     const jclass referenceClass;
     const jmethodID referenceCtor;
@@ -105,9 +105,9 @@ public:
     	return env->NewObjectArray(size, referenceClass, nullptr);
     }
 
-    inline void trackReference(JNIEnv* env, jlong runtimeHandle, jobject reference, jobject referenceMonitor) const
+    inline void trackReference(JNIEnv* env, jobject runtime, jobject reference) const
     {
-        env->CallStaticVoidMethod(v8Class, v8trackReference, runtimeHandle, reference, referenceMonitor);
+        env->CallVoidMethod(runtime, runtimeTrackReference, reference);
     }
 
 	inline auto applyFunctionCallback(JNIEnv* env, jobject object, const jvalue* args) const -> jobject

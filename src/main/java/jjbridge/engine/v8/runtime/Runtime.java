@@ -16,6 +16,8 @@ import jjbridge.api.value.JSString;
 import jjbridge.api.value.JSType;
 import jjbridge.api.value.JSUndefined;
 import jjbridge.api.value.JSValue;
+import jjbridge.api.value.strategy.FunctionCallback;
+import jjbridge.engine.utils.Cache;
 import jjbridge.engine.utils.ReferenceMonitor;
 import jjbridge.engine.v8.V8;
 
@@ -32,14 +34,17 @@ public class Runtime extends JSBaseRuntime<Reference>
     @SuppressWarnings("checkstyle:MissingJavadocMethod")
     @SuppressFBWarnings(value = "SC_START_IN_CTOR",
             justification = "This class should be final but it is not due to mocking in tests")
-    public Runtime(V8 v8, long runtimeHandle, ReferenceMonitor<Reference> referenceMonitor)
+    public Runtime(V8 v8, ReferenceMonitor<Reference> referenceMonitor,
+                   Cache<FunctionCallback<Reference>> functionsCache,
+                   Cache<ReferenceTypeGetter> typeGetterCache, Cache<EqualityChecker> equalityCheckerCache,
+                   Cache<Object> externalCache)
     {
         super();
         this.v8 = v8;
-        this.runtimeHandle = runtimeHandle;
-        this.referenceMonitor = referenceMonitor;
+        this.runtimeHandle = this.v8.createRuntime(this, functionsCache, typeGetterCache, equalityCheckerCache,
+                externalCache);
         this.accessorsFactory = new AccessorsFactory(this.v8, this.runtimeHandle);
-
+        this.referenceMonitor = referenceMonitor;
         this.referenceMonitor.start();
     }
 
@@ -149,6 +154,17 @@ public class Runtime extends JSBaseRuntime<Reference>
                 throw new UnsupportedOperationException("Cannot create reference of type " + type.name());
         }
         return reference;
+    }
+
+    @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", justification = "Called by native code")
+    private void track(Reference reference)
+    {
+        /*
+         We extract handle value here to avoid further references to object in lambda which will prevent garbage
+         collection.
+        */
+        long handle = reference.handle;
+        referenceMonitor.track(reference, () -> this.v8.releaseReference(this.runtimeHandle, handle));
     }
 
     @Override

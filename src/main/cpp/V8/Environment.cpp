@@ -15,8 +15,8 @@
 #define INIT_ENUM_VALUE(variable, class, name, type)            variable(env->NewGlobalRef(env->GetStaticObjectField(class, env->GetStaticFieldID(class, name, type))))
 
 Environment::Environment(JavaVM* jvm, JNIEnv* env)
-: INIT_CLASS(v8Class, "jjbridge/engine/v8/V8")
-, INIT_STATIC_METHOD(v8trackReference, v8Class, "track", "(JLjjbridge/engine/v8/runtime/Reference;Ljjbridge/engine/utils/ReferenceMonitor;)V")
+: INIT_CLASS(runtimeClass, "jjbridge/engine/v8/runtime/Runtime")
+, INIT_METHOD(runtimeTrackReference, runtimeClass, "track", "(Ljjbridge/engine/v8/runtime/Reference;)V")
 
 , INIT_CLASS(referenceClass, "jjbridge/engine/v8/runtime/Reference")
 , INIT_METHOD(referenceCtor, referenceClass, "<init>", "(JLjjbridge/api/value/JSType;Ljjbridge/engine/v8/runtime/ReferenceTypeGetter;Ljjbridge/engine/v8/runtime/EqualityChecker;)V")
@@ -75,7 +75,7 @@ void Environment::Release(JNIEnv* env, Environment* environment)
 	v8::V8::Dispose();
 	v8::V8::ShutdownPlatform();
 
-	env->DeleteGlobalRef(environment->v8Class);
+	env->DeleteGlobalRef(environment->runtimeClass);
 	env->DeleteGlobalRef(environment->referenceClass);
 	env->DeleteGlobalRef(environment->cacheClass);
 	env->DeleteGlobalRef(environment->nullPointerExceptionClass);

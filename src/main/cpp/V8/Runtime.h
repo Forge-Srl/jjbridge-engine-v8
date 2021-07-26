@@ -18,7 +18,7 @@
 class Runtime
 {
 private:
-    const jobject referenceMonitor;
+    const jobject runtime;
     const jobject functionCache;
     const jobject typeGetterCache;
     const jobject equalityCheckerCache;
@@ -29,7 +29,7 @@ public:
 	v8::Isolate* isolate;
 	v8::Persistent<v8::Context> context;
 
-	Runtime(JNIEnv* env, jobject referenceMonitor, jobject functionCache, jobject typeGetterCache,
+	Runtime(JNIEnv* env, jobject runtime, jobject functionCache, jobject typeGetterCache,
 	    jobject equalityCheckerCache, jobject externalCache);
 
     inline auto getHandle() const -> jlong
@@ -60,11 +60,10 @@ public:
         return NewReference(env, handle, getReferenceType(env, context, handle), typeGetter, equalityChecker);
     }
 
-    inline auto NewReference(JNIEnv* env, Handle* handle, jobject type, jobject typeGetter,
-        jobject equalityChecker) const -> jobject
+    inline auto NewReference(JNIEnv* env, Handle* handle, jobject type, jobject typeGetter, jobject equalityChecker) const -> jobject
 	{
 	    jobject reference = environment->NewReference(env, handle->AsLong(), type, typeGetter, equalityChecker);
-	    environment->trackReference(env, this->getHandle(), reference, this->referenceMonitor);
+	    environment->trackReference(env, runtime, reference);
 	    if (env->ExceptionCheck() == JNI_TRUE) {
         	// Don't clear so there is no need to rethrow exception
         	// env->ExceptionClear();

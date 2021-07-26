@@ -18,8 +18,8 @@ auto getMessage(v8::Local<v8::Context> context, v8::TryCatch* tryCatch) -> std::
     return str;
 }
 
-Runtime::Runtime(JNIEnv* env, jobject referenceMonitor, jobject functionCache, jobject typeGetterCache, jobject equalityCheckerCache, jobject externalCache)
-: referenceMonitor(env->NewGlobalRef(referenceMonitor))
+Runtime::Runtime(JNIEnv* env, jobject runtime, jobject functionCache, jobject typeGetterCache, jobject equalityCheckerCache, jobject externalCache)
+: runtime(env->NewGlobalRef(runtime))
 , functionCache(env->NewGlobalRef(functionCache))
 , typeGetterCache(env->NewGlobalRef(typeGetterCache))
 , equalityCheckerCache(env->NewGlobalRef(equalityCheckerCache))
@@ -160,7 +160,7 @@ auto Runtime::safeRelease(JNIEnv* env, jlong runtimeHandle) -> bool
 
 	auto* runtime = reinterpret_cast<Runtime*>(runtimeHandle);
 	runtime->isolate->LowMemoryNotification(); //Forces garbage collection before dispose
-	env->DeleteGlobalRef(runtime->referenceMonitor);
+	env->DeleteGlobalRef(runtime->runtime);
 
 	env->CallVoidMethod(runtime->functionCache, environment->cacheClear);
 	if (env->ExceptionCheck() == JNI_TRUE) {

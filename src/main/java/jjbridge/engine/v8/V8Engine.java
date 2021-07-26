@@ -39,11 +39,14 @@ public final class V8Engine implements JSEngine
     @Override
     public final JSRuntime newRuntime()
     {
-        V8 v8 = V8.getInstance();
         ReferenceMonitor<Reference> referenceMonitor = new ReferenceMonitor<>(50);
-        long runtimeHandle = v8.createRuntime(referenceMonitor, new Cache<>(), new Cache<>(), new Cache<>(),
-                new Cache<>());
-        return new Runtime(v8, runtimeHandle, referenceMonitor);
+        return newRuntime(referenceMonitor);
+    }
+
+    public final JSRuntime newRuntime(ReferenceMonitor<Reference> referenceMonitor)
+    {
+        V8 v8 = V8.getInstance();
+        return new Runtime(v8, referenceMonitor, new Cache<>(), new Cache<>(), new Cache<>(), new Cache<>());
     }
 
     @Override
