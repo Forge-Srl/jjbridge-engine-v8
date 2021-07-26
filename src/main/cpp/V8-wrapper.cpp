@@ -10,7 +10,9 @@
 #include "V8/FunctionCallbackData.h"
 #include "V8/InspectorClient.h"
 
-#define JPF(methodName) Java_jjbridge_engine_v8_V8_##methodName
+// Underscore in method name must be escaped as "_1"
+// See: https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/design.html#resolving_native_method_names
+#define JPF(methodName) Java_jjbridge_engine_v8_V8_ ## methodName ## _1internal
 
 Environment* Runtime::environment = nullptr;
 
@@ -41,11 +43,11 @@ extern "C"
     }
 
     JNIEXPORT auto JNICALL
-    JPF(initializeV8)(JNIEnv* env, jobject thiz, jstring nativeLibraryPath) -> jboolean
+    JPF(initializeV8)(JNIEnv* env, jobject thiz, jstring resourcePath) -> jboolean
     {
-        const char* pathString = env->GetStringUTFChars(nativeLibraryPath, JNI_FALSE);
+        const char* pathString = env->GetStringUTFChars(resourcePath, JNI_FALSE);
         const bool initialized = Runtime::environment->InitializeV8(pathString);
-        env->ReleaseStringUTFChars(nativeLibraryPath, pathString);
+        env->ReleaseStringUTFChars(resourcePath, pathString);
 
         return initialized;
     }
@@ -380,7 +382,7 @@ extern "C"
     }
 
     JNIEXPORT void JNICALL
-    JPF(setDateTime)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jstring dateTime)
+    JPF(setDateTimeString)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jstring dateTime)
     {
         Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
         newLocalContext(runtime, context)

@@ -33,7 +33,6 @@ public class AccessorsFactoryTest {
     @BeforeEach
     public void before() {
         factory = new AccessorsFactory(v8, runtimeHandle);
-        lenient().when(v8.getLock()).thenReturn(new Object());
     }
 
     @Test
@@ -140,7 +139,7 @@ public class AccessorsFactoryTest {
         Date value = simpleDateFormat.parse("6403-04-14T05:58:33.197Z");
         ValueSetter<Date> setter = factory.dateSetter(referenceHandle);
         setter.setValue(value);
-        verify(v8).setDateTime(runtimeHandle, referenceHandle, "6403-04-14T05:58:33.197Z");
+        verify(v8).setDateTimeString(runtimeHandle, referenceHandle, "6403-04-14T05:58:33.197Z");
     }
 
     @Test

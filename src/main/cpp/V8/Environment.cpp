@@ -58,9 +58,9 @@ Environment::Environment(JavaVM* jvm, JNIEnv* env)
 	_jvm = jvm;
 }
 
-auto Environment::InitializeV8(const char* libraryPath) -> bool
+auto Environment::InitializeV8(const char* resourcePath) -> bool
 {
-    if (!v8::V8::InitializeICU(libraryPath))
+    if (!v8::V8::InitializeICU(resourcePath))
 	{
 	    return false;
 	}

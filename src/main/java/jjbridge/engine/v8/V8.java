@@ -1,9 +1,15 @@
 package jjbridge.engine.v8;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jjbridge.api.inspector.MessageHandler;
+import jjbridge.api.value.JSType;
+import jjbridge.api.value.strategy.FunctionCallback;
+import jjbridge.engine.utils.Cache;
 import jjbridge.engine.utils.NativeLibraryLoader;
 import jjbridge.engine.utils.ReferenceMonitor;
+import jjbridge.engine.v8.runtime.EqualityChecker;
 import jjbridge.engine.v8.runtime.Reference;
+import jjbridge.engine.v8.runtime.ReferenceTypeGetter;
 
 @SuppressWarnings("checkstyle:MissingJavadocType")
 public class V8
@@ -14,7 +20,7 @@ public class V8
 
     static
     {
-        nativeLibraryLoader.loadLibrary("V8-wrapper", new String[]{ "icuuc" });
+        nativeLibraryLoader.loadLibrary("V8-wrapper", new String[]{"icuuc"});
     }
 
     // Not private because mockito sucks
@@ -30,7 +36,7 @@ public class V8
         }
 
         String resourcePath = nativeLibraryLoader.getResourcePath("icudtl.dat");
-        if (!initializeV8(resourcePath))
+        if (!initializeV8_internal(resourcePath))
         {
             throw new RuntimeException("Cannot initialize V8 with " + resourcePath);
         }
@@ -50,106 +56,447 @@ public class V8
          collection.
         */
         long handle = reference.handle;
-        referenceMonitor.track(reference, () -> releaseReference(runtimeHandle, handle));
+        referenceMonitor.track(reference, () -> releaseReference_internal(runtimeHandle, handle));
     }
 
-    static native void setFlags(String flags);
+    private static native void setFlags_internal(String flags);
 
-    private static native boolean initializeV8(String nativeLibraryPath);
+    static void setFlags(String[] flags)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (String flag : flags)
+        {
+            sb.append(flag).append(' ');
+        }
+        setFlags_internal(sb.toString());
+    }
 
-    private static native void releaseReference(long runtimeHandle, long referenceHandle);
+    private static native boolean initializeV8_internal(String resourcePath);
 
-    public native long createRuntime(Object referenceMonitor, Object functionsCache, Object typeGetterCache,
-                                     Object equalityCheckerCache, Object externalCache);
+    private static native void releaseReference_internal(long runtimeHandle, long referenceHandle);
 
-    public native boolean releaseRuntime(long runtimeHandle);
+    private native long createRuntime_internal(Object referenceMonitor, Object functionsCache, Object typeGetterCache,
+                                               Object equalityCheckerCache, Object externalCache);
 
-    public native Object getReferenceType(long runtimeHandle, long referenceHandle);
+    public long createRuntime(ReferenceMonitor<Reference> referenceMonitor,
+                              Cache<FunctionCallback<Reference>> functionsCache,
+                              Cache<ReferenceTypeGetter> typeGetterCache, Cache<EqualityChecker> equalityCheckerCache,
+                              Cache<Object> externalCache)
+    {
+        return createRuntime_internal(referenceMonitor, functionsCache, typeGetterCache, equalityCheckerCache,
+                externalCache);
+    }
 
-    public native Object executeScript(long runtimeHandle, String fileName, String sourceCode,
-                                       Object referenceTypeGetter, Object equalityChecker);
+    private native boolean releaseRuntime_internal(long runtimeHandle);
 
-    public native Object globalObjectReference(long runtimeHandle, Object referenceTypeGetter, Object equalityChecker);
+    public boolean releaseRuntime(long runtimeHandle)
+    {
+        return releaseRuntime_internal(runtimeHandle);
+    }
 
-    public native Object newValue(long runtimeHandle, Object type, Object referenceTypeGetter, Object equalityChecker);
+    private native Object getReferenceType_internal(long runtimeHandle, long referenceHandle);
 
-    public native boolean equalsValue(long runtimeHandle, long firstValueHandle, long secondValueHandle);
+    public JSType getReferenceType(long runtimeHandle, long referenceHandle)
+    {
+        synchronized (lock)
+        {
+            return (JSType) getReferenceType_internal(runtimeHandle, referenceHandle);
+        }
+    }
 
-    public native void initUndefinedValue(long runtimeHandle, long valueHandle);
+    private native Object executeScript_internal(long runtimeHandle, String fileName, String sourceCode,
+                                                 Object referenceTypeGetter, Object equalityChecker);
 
-    public native void initNullValue(long runtimeHandle, long valueHandle);
+    public Reference executeScript(long runtimeHandle, String fileName, String sourceCode,
+                                   ReferenceTypeGetter referenceTypeGetter, EqualityChecker equalityChecker)
+    {
+        synchronized (lock)
+        {
+            return (Reference) executeScript_internal(runtimeHandle, fileName, sourceCode, referenceTypeGetter,
+                    equalityChecker);
+        }
+    }
 
-    public native boolean getBooleanValue(long runtimeHandle, long valueHandle);
+    private native Object globalObjectReference_internal(long runtimeHandle, Object referenceTypeGetter,
+                                                         Object equalityChecker);
 
-    public native void setBooleanValue(long runtimeHandle, long valueHandle, boolean value);
+    public Reference globalObjectReference(long runtimeHandle, ReferenceTypeGetter referenceTypeGetter,
+                                            EqualityChecker equalityChecker)
+    {
+        synchronized (lock)
+        {
+            return (Reference) globalObjectReference_internal(runtimeHandle, referenceTypeGetter, equalityChecker);
+        }
+    }
 
-    public native void initBooleanValue(long runtimeHandle, long valueHandle);
+    private native Object newValue_internal(long runtimeHandle, Object type, Object referenceTypeGetter,
+                                            Object equalityChecker);
 
-    public native long getLongValue(long runtimeHandle, long valueHandle);
+    public Reference newValue(long runtimeHandle, JSType type, ReferenceTypeGetter referenceTypeGetter,
+                              EqualityChecker equalityChecker)
+    {
+        synchronized (lock)
+        {
+            return (Reference) newValue_internal(runtimeHandle, type, referenceTypeGetter, equalityChecker);
+        }
+    }
 
-    public native void setLongValue(long runtimeHandle, long valueHandle, long value);
+    private native boolean equalsValue_internal(long runtimeHandle, long firstValueHandle, long secondValueHandle);
 
-    public native void initLongValue(long runtimeHandle, long valueHandle);
+    public boolean equalsValue(long runtimeHandle, long firstValueHandle, long secondValueHandle)
+    {
+        synchronized (lock)
+        {
+            return equalsValue_internal(runtimeHandle, firstValueHandle, secondValueHandle);
+        }
+    }
 
-    public native double getDoubleValue(long runtimeHandle, long valueHandle);
+    private native void initUndefinedValue_internal(long runtimeHandle, long valueHandle);
 
-    public native void setDoubleValue(long runtimeHandle, long valueHandle, double value);
+    public void initUndefinedValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            initUndefinedValue_internal(runtimeHandle, valueHandle);
+        }
+    }
 
-    public native void initDoubleValue(long runtimeHandle, long valueHandle);
+    private native void initNullValue_internal(long runtimeHandle, long valueHandle);
 
-    public native String getStringValue(long runtimeHandle, long valueHandle);
+    public void initNullValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            initNullValue_internal(runtimeHandle, valueHandle);
+        }
+    }
 
-    public native void setStringValue(long runtimeHandle, long valueHandle, String value);
+    private native boolean getBooleanValue_internal(long runtimeHandle, long valueHandle);
 
-    public native void initStringValue(long runtimeHandle, long valueHandle);
+    public boolean getBooleanValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            return getBooleanValue_internal(runtimeHandle, valueHandle);
+        }
+    }
 
-    public native Object getExternalValue(long runtimeHandle, long valueHandle);
+    private native void setBooleanValue_internal(long runtimeHandle, long valueHandle, boolean value);
 
-    public native void setExternalValue(long runtimeHandle, long valueHandle, Object value);
+    public void setBooleanValue(long runtimeHandle, long valueHandle, boolean value)
+    {
+        synchronized (lock)
+        {
+            setBooleanValue_internal(runtimeHandle, valueHandle, value);
+        }
+    }
 
-    public native void initExternalValue(long runtimeHandle, long valueHandle);
+    private native void initBooleanValue_internal(long runtimeHandle, long valueHandle);
 
-    public native Object getObjectProperty(long runtimeHandle, long objectHandle, String property,
+    public void initBooleanValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            initBooleanValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native long getLongValue_internal(long runtimeHandle, long valueHandle);
+
+    public long getLongValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            return getLongValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native void setLongValue_internal(long runtimeHandle, long valueHandle, long value);
+
+    public void setLongValue(long runtimeHandle, long valueHandle, long value)
+    {
+        synchronized (lock)
+        {
+            setLongValue_internal(runtimeHandle, valueHandle, value);
+        }
+    }
+
+    private native void initLongValue_internal(long runtimeHandle, long valueHandle);
+
+    public void initLongValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            initLongValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native double getDoubleValue_internal(long runtimeHandle, long valueHandle);
+
+    public double getDoubleValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            return getDoubleValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native void setDoubleValue_internal(long runtimeHandle, long valueHandle, double value);
+
+    public void setDoubleValue(long runtimeHandle, long valueHandle, double value)
+    {
+        synchronized (lock)
+        {
+            setDoubleValue_internal(runtimeHandle, valueHandle, value);
+        }
+    }
+
+    private native void initDoubleValue_internal(long runtimeHandle, long valueHandle);
+
+    public void initDoubleValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            initDoubleValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native String getStringValue_internal(long runtimeHandle, long valueHandle);
+
+    public String getStringValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            return getStringValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native void setStringValue_internal(long runtimeHandle, long valueHandle, String value);
+
+    public void setStringValue(long runtimeHandle, long valueHandle, String value)
+    {
+        synchronized (lock)
+        {
+            setStringValue_internal(runtimeHandle, valueHandle, value);
+        }
+    }
+
+    private native void initStringValue_internal(long runtimeHandle, long valueHandle);
+
+    public void initStringValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            initStringValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native Object getExternalValue_internal(long runtimeHandle, long valueHandle);
+
+    @SuppressWarnings("unchecked")
+    public <T> T getExternalValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            return (T) getExternalValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native void setExternalValue_internal(long runtimeHandle, long valueHandle, Object value);
+
+    public <T> void setExternalValue(long runtimeHandle, long valueHandle, T value)
+    {
+        synchronized (lock)
+        {
+            setExternalValue_internal(runtimeHandle, valueHandle, value);
+        }
+    }
+
+    private native void initExternalValue_internal(long runtimeHandle, long valueHandle);
+
+    public void initExternalValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            initExternalValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native Object getObjectProperty_internal(long runtimeHandle, long objectHandle, String property,
                                            Object referenceTypeGetter, Object equalityChecker);
 
-    public native void setObjectProperty(long runtimeHandle, long objectHandle, String property, long valueHandle);
+    public Reference getObjectProperty(long runtimeHandle, long objectHandle, String property,
+                                       ReferenceTypeGetter referenceTypeGetter, EqualityChecker equalityChecker)
+    {
+        synchronized (lock)
+        {
+            return (Reference) getObjectProperty_internal(runtimeHandle, objectHandle, property, referenceTypeGetter,
+                    equalityChecker);
+        }
+    }
 
-    public native void initObjectValue(long runtimeHandle, long valueHandle);
+    private native void setObjectProperty_internal(long runtimeHandle, long objectHandle, String property,
+                                                   long valueHandle);
 
-    public native String getDateTimeString(long runtimeHandle, long objectHandle);
+    public void setObjectProperty(long runtimeHandle, long objectHandle, String property, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            setObjectProperty_internal(runtimeHandle, objectHandle, property, valueHandle);
+        }
+    }
 
-    public native void setDateTime(long runtimeHandle, long objectHandle, String dateTime);
+    private native void initObjectValue_internal(long runtimeHandle, long valueHandle);
 
-    public native void initDateTimeValue(long runtimeHandle, long valueHandle);
+    public void initObjectValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            initObjectValue_internal(runtimeHandle, valueHandle);
+        }
+    }
 
-    public native Object invokeFunction(long runtimeHandle, long functionHandle, long receiverHandle, long[] argHandles,
-                                        Object referenceTypeGetter, Object equalityChecker);
+    private native String getDateTimeString_internal(long runtimeHandle, long objectHandle);
 
-    public native Object invokeConstructor(long runtimeHandle, long functionHandle, long[] argHandles,
+    public String getDateTimeString(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            return getDateTimeString_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native void setDateTimeString_internal(long runtimeHandle, long objectHandle, String dateTime);
+
+    public void setDateTimeString(long runtimeHandle, long objectHandle, String value)
+    {
+        synchronized (lock)
+        {
+            setDateTimeString_internal(runtimeHandle, objectHandle, value);
+        }
+    }
+
+    private native void initDateTimeValue_internal(long runtimeHandle, long valueHandle);
+
+    public void initDateTimeValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            initDateTimeValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native Object invokeFunction_internal(long runtimeHandle, long functionHandle, long receiverHandle,
+                                                  long[] argHandles, Object referenceTypeGetter,
+                                                  Object equalityChecker);
+
+    public Reference invokeFunction(long runtimeHandle, long functionHandle, long receiverHandle, long[] argHandles,
+                                    ReferenceTypeGetter referenceTypeGetter, EqualityChecker equalityChecker)
+    {
+        synchronized (lock)
+        {
+            return (Reference) invokeFunction_internal(runtimeHandle, functionHandle, receiverHandle, argHandles,
+                    referenceTypeGetter, equalityChecker);
+        }
+    }
+
+    private native Object invokeConstructor_internal(long runtimeHandle, long functionHandle, long[] argHandles,
                                            Object referenceTypeGetter, Object equalityChecker);
 
-    public native void setFunctionHandler(long runtimeHandle, long functionHandle, Object handler,
+    public Reference invokeConstructor(long runtimeHandle, long functionHandle, long[] argHandles,
+                                    ReferenceTypeGetter referenceTypeGetter, EqualityChecker equalityChecker)
+    {
+        synchronized (lock)
+        {
+            return (Reference) invokeConstructor_internal(runtimeHandle, functionHandle, argHandles,
+                    referenceTypeGetter, equalityChecker);
+        }
+    }
+
+    private native void setFunctionHandler_internal(long runtimeHandle, long functionHandle, Object handler,
                                           Object referenceTypeGetter, Object equalityChecker);
 
-    public native void initFunctionValue(long runtimeHandle, long valueHandle);
-
-    public native int getArraySize(long runtimeHandle, long arrayHandle);
-
-    public native Object getElementByPosition(long runtimeHandle, long arrayHandle, int position,
-                                              Object referenceTypeGetter, Object equalityChecker);
-
-    public native void setElementByPosition(long runtimeHandle, long objectHandle, int position, long valueHandle);
-
-    public native void initArrayValue(long runtimeHandle, long valueHandle);
-
-    public native long initInspector(long runtimeHandle, Object messageHandler);
-
-    public native void closeInspector(long inspectorHandle);
-
-    public native void onInspectorMessage(long inspectorHandle, String message);
-
-    public Object getLock()
+    public void setFunctionHandler(long runtimeHandle, long functionHandle, FunctionCallback<Reference> handler,
+                                       ReferenceTypeGetter referenceTypeGetter, EqualityChecker equalityChecker)
     {
-        return lock;
+        synchronized (lock)
+        {
+            setFunctionHandler_internal(runtimeHandle, functionHandle, handler, referenceTypeGetter, equalityChecker);
+        }
+    }
+
+    private native void initFunctionValue_internal(long runtimeHandle, long valueHandle);
+
+    public void initFunctionValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            initFunctionValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native int getArraySize_internal(long runtimeHandle, long arrayHandle);
+
+    public int getArraySize(long runtimeHandle, long arrayHandle)
+    {
+        synchronized (lock)
+        {
+            return getArraySize_internal(runtimeHandle, arrayHandle);
+        }
+    }
+
+    private native Object getElementByPosition_internal(long runtimeHandle, long arrayHandle, int position,
+                                                        Object referenceTypeGetter, Object equalityChecker);
+
+    public Reference getElementByPosition(long runtimeHandle, long arrayHandle, int position,
+                                          ReferenceTypeGetter referenceTypeGetter, EqualityChecker equalityChecker)
+    {
+        synchronized (lock)
+        {
+            return (Reference) getElementByPosition_internal(runtimeHandle, arrayHandle, position, referenceTypeGetter,
+                    equalityChecker);
+        }
+    }
+
+    private native void setElementByPosition_internal(long runtimeHandle, long arrayHandle, int position,
+                                                      long valueHandle);
+
+    public void setElementByPosition(long runtimeHandle, long arrayHandle, int position, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            setElementByPosition_internal(runtimeHandle, arrayHandle, position, valueHandle);
+        }
+    }
+
+    private native void initArrayValue_internal(long runtimeHandle, long valueHandle);
+
+    public void initArrayValue(long runtimeHandle, long valueHandle)
+    {
+        synchronized (lock)
+        {
+            initArrayValue_internal(runtimeHandle, valueHandle);
+        }
+    }
+
+    private native long initInspector_internal(long runtimeHandle, Object messageHandler);
+
+    public long initInspector(long runtimeHandle, MessageHandler messageHandler)
+    {
+        return initInspector_internal(runtimeHandle, messageHandler);
+    }
+
+    private native void closeInspector_internal(long inspectorHandle);
+
+    public void closeInspector(long inspectorHandle)
+    {
+        closeInspector_internal(inspectorHandle);
+    }
+
+    private native void onInspectorMessage_internal(long inspectorHandle, String message);
+
+    public void onInspectorMessage(long inspectorHandle, String message)
+    {
+        onInspectorMessage_internal(inspectorHandle, message);
     }
 }

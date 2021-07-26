@@ -57,7 +57,7 @@ public:
 
 	Environment(JavaVM* jvm, JNIEnv* env);
 
-	auto InitializeV8(const char* libraryPath) -> bool;
+	auto InitializeV8(const char* resourcePath) -> bool;
 
 	auto getCurrentThreadEnv(JNIEnv** env, int version) -> int
 	{
