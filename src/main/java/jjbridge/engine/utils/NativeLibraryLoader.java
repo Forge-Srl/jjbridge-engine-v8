@@ -289,6 +289,10 @@ public class NativeLibraryLoader
         this.assetLoader = assetLoader;
     }
 
+    /**
+     * The asset loader is used when running on Android to load the resources files shipped with the library.
+     * This is needed due to the way Android manages permissions to access the filesystem.
+     * */
     public interface AssetLoader
     {
         /**

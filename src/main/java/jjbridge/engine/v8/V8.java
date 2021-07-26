@@ -11,7 +11,7 @@ import jjbridge.engine.v8.runtime.EqualityChecker;
 import jjbridge.engine.v8.runtime.Reference;
 import jjbridge.engine.v8.runtime.ReferenceTypeGetter;
 
-@SuppressWarnings("checkstyle:MissingJavadocType")
+@SuppressWarnings({"checkstyle:MissingJavadocType", "checkstyle:MissingJavadocMethod"})
 public class V8
 {
     private static final NativeLibraryLoader nativeLibraryLoader = new NativeLibraryLoader();
