@@ -4,8 +4,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -273,9 +275,19 @@ public class NativeLibraryLoader
 
         File tempDir = assetLoader.getTempDir();
         File tempFile = new File(tempDir, fileName);
-        try (InputStream assetAsStream = assetLoader.getAssetAsStream(fileName))
+        try (InputStream assetAsStream = assetLoader.getAssetAsStream(fileName);
+             OutputStream outputStream = new FileOutputStream(tempFile))
         {
-            Files.copy(assetAsStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            /*
+             * Can't use Files.copy(InputStream in, Path target, CopyOption... options)
+             * because Android sucks :(
+             */
+            byte[] buf = new byte[8192];
+            int n;
+            while ((n = assetAsStream.read(buf)) > 0)
+            {
+                outputStream.write(buf, 0, n);
+            }
         }
         catch (IOException e)
         {
