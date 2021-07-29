@@ -11,8 +11,10 @@ import jjbridge.api.value.strategy.ValueGetter;
 import jjbridge.api.value.strategy.ValueSetter;
 import jjbridge.engine.v8.V8;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 
 class AccessorsFactory
@@ -97,26 +99,18 @@ class AccessorsFactory
         return value -> this.v8.setExternalValue(this.runtimeHandle, handle, value);
     }
 
-    // Must be used with synchronized due to SpotBugs STCAL_INVOKE_ON_STATIC_DATE_FORMAT_INSTANCE. See also:
-    // - https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6231579
-    // - https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6178997
-    private static final SimpleDateFormat simpleDateFormat =
-            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     protected ValueGetter<Date> dateGetter(long handle)
     {
         return () ->
         {
             String dateTimeString = this.v8.getDateTimeString(this.runtimeHandle, handle);
-
             try
             {
-                synchronized (simpleDateFormat)
-                {
-                    return simpleDateFormat.parse(dateTimeString);
-                }
+                return new Date(OffsetDateTime.parse(dateTimeString, dateTimeFormatter).toInstant().toEpochMilli());
             }
-            catch (ParseException e)
+            catch (DateTimeParseException e)
             {
                 throw new IllegalArgumentException("Wrong date-time format.");
             }
@@ -127,12 +121,7 @@ class AccessorsFactory
     {
         return value ->
         {
-            String format;
-            synchronized (simpleDateFormat)
-            {
-                format = simpleDateFormat.format(value);
-            }
-
+            String format = value.toInstant().atOffset(ZoneOffset.UTC).format(dateTimeFormatter);
             this.v8.setDateTimeString(this.runtimeHandle, handle, format);
         };
     }

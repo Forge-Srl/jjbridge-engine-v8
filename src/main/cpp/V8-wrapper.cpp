@@ -372,12 +372,26 @@ extern "C"
     {
         Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
         newLocalContext(runtime, context)
+        v8::TryCatch tryCatch(runtime->isolate);
         v8::Local<v8::Object> object = Handle::FromLong(referenceHandle)->GetLocal<v8::Object>();
 
         v8::Function* function = v8::Function::Cast(*(object->Get(context,
             v8::String::NewFromUtf8Literal(runtime->isolate, "toISOString")).ToLocalChecked()));
-        v8::Local<v8::Value> dateTime = (function->Call(context, object, 0, nullptr)).ToLocalChecked();
-        v8::String::Value unicodeString(runtime->isolate, (dateTime->ToString(context)).ToLocalChecked());
+        v8::MaybeLocal<v8::Value> dateTime = function->Call(context, object, 0, nullptr);
+
+        if (tryCatch.HasCaught())
+        {
+            runtime->throwExecutionException(env, context, &tryCatch);
+            return nullptr;
+        }
+
+        if (dateTime.IsEmpty())
+        {
+            runtime->throwExecutionException(env, u"Date conversion to String failed.");
+            return nullptr;
+        }
+
+        v8::String::Value unicodeString(runtime->isolate, (dateTime.ToLocalChecked()->ToString(context)).ToLocalChecked());
         return env->NewString(*unicodeString, unicodeString.length());
     }
 

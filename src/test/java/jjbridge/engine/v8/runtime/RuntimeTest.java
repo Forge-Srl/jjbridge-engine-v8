@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,10 +21,6 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RuntimeTest {
-    static {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-    }
-
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     private V8Engine engine;
     
@@ -491,6 +486,9 @@ public class RuntimeTest {
             dateResult.setValue(expectedDate);
             assertEquals(expectedDate, dateResult.getValue());
             expectedDate = simpleDateFormat.parse("2019-01-10T15:33:30.666Z");
+            dateResult.setValue(expectedDate);
+            assertEquals(expectedDate, dateResult.getValue());
+            expectedDate = simpleDateFormat.parse("2019-01-10T23:23:59.621+01:30");
             dateResult.setValue(expectedDate);
             assertEquals(expectedDate, dateResult.getValue());
         } catch (Exception e) {
