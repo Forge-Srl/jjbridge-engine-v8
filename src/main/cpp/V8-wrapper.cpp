@@ -569,12 +569,17 @@ extern "C"
                 {
                     jobject item = runtime->NewReference(env, context, args[i], typeGetter, equalityChecker);
                     env->SetObjectArrayElement(varArguments, i, item);
+                    env->DeleteLocalRef(item);
                 }
+                env->DeleteLocalRef(typeGetter);
+                env->DeleteLocalRef(equalityChecker);
 
                 jvalue arguments[1];
                 arguments[0].l = varArguments;
 
                 jobject result = Runtime::environment->applyFunctionCallback(env, callback, arguments);
+                env->DeleteLocalRef(callback);
+                env->DeleteLocalRef(varArguments);
                 if (env->ExceptionCheck() == JNI_TRUE) {
                     jthrowable exception = env->ExceptionOccurred();
                     env->ExceptionClear();
@@ -588,6 +593,7 @@ extern "C"
                 }
 
                 jlong resultHandle = Runtime::environment->getReferenceHandle(env, result);
+                env->DeleteLocalRef(result);
                 v8::Local<v8::Value> resultValue = Handle::FromLong(resultHandle)->GetLocal<v8::Value>();
 
                 args.GetReturnValue().Set(resultValue);

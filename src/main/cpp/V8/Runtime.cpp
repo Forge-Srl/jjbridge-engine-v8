@@ -105,9 +105,11 @@ void Runtime::throwJNIExceptionInJS(JNIEnv* env, jthrowable throwable) const
 {
     jclass clazz = env->GetObjectClass(throwable);
     jmethodID getMessage = env->GetMethodID(clazz, "toString", "()Ljava/lang/String;");
-    auto* message = (jstring) env->CallObjectMethod(throwable, getMessage);
+    jstring message = (jstring) env->CallObjectMethod(throwable, getMessage);
+    env->DeleteLocalRef(clazz);
 
     v8::Local<v8::String> jsMessage = createV8String(env, message);
+    env->DeleteLocalRef(message);
     jsMessage = v8::String::Concat(isolate, v8::String::NewFromUtf8Literal(isolate, "java exception in callback ["), jsMessage);
     jsMessage = v8::String::Concat(isolate, jsMessage, v8::String::NewFromUtf8Literal(isolate, "]."));
 

@@ -122,27 +122,41 @@ public:
 
 	inline void throwNullPointerException(JNIEnv* env, const jchar* message, jsize length) const
 	{
-        env->Throw((jthrowable) env->NewObject(nullPointerExceptionClass, nullPointerExceptionCtor, env->NewString(message, length)));
+        jstring exceptionMessage = env->NewString(message, length);
+        jthrowable exception = (jthrowable) env->NewObject(nullPointerExceptionClass, nullPointerExceptionCtor, exceptionMessage);
+        env->DeleteLocalRef(exceptionMessage);
+        env->Throw(exception);
 	}
 
 	inline void throwCompilationException(JNIEnv* env, const jchar* message, jsize length) const
 	{
-        env->Throw((jthrowable) env->NewObject(compilationExceptionClass, compilationExceptionCtor, env->NewString(message, length)));
+        jstring exceptionMessage = env->NewString(message, length);
+        jthrowable exception = (jthrowable) env->NewObject(compilationExceptionClass, compilationExceptionCtor, exceptionMessage);
+        env->DeleteLocalRef(exceptionMessage);
+        env->Throw(exception);
 	}
 
 	inline void throwExecutionException(JNIEnv* env, const jchar* message, jsize length) const
 	{
-        env->Throw((jthrowable) env->NewObject(executionExceptionClass, executionExceptionCtor, env->NewString(message, length)));
+        jstring exceptionMessage = env->NewString(message, length);
+        jthrowable exception = (jthrowable) env->NewObject(executionExceptionClass, executionExceptionCtor, exceptionMessage);
+        env->DeleteLocalRef(exceptionMessage);
+        env->Throw(exception);
 	}
 
-	inline void throwExecutionException(JNIEnv* env, const jchar* message, jsize length, jthrowable exception) const
+	inline void throwExecutionException(JNIEnv* env, const jchar* message, jsize length, jthrowable innerException) const
 	{
-        env->Throw((jthrowable) env->NewObject(executionExceptionClass, executionExceptionCtor, env->NewString(message, length), exception));
+	    jstring exceptionMessage = env->NewString(message, length);
+        jthrowable exception = (jthrowable) env->NewObject(executionExceptionClass, executionExceptionCtor, exceptionMessage, innerException);
+        env->DeleteLocalRef(exceptionMessage);
+        env->Throw(exception);
 	}
 
     inline void sendToInspector(JNIEnv* env, jobject object, const jchar* message, jsize length) const
 	{
-		env->CallVoidMethod(object, messageHandlerSendToInspector, env->NewString(message, length));
+		jstring jmessage = env->NewString(message, length);
+		env->CallVoidMethod(object, messageHandlerSendToInspector, jmessage);
+		env->DeleteLocalRef(jmessage);
 	}
 };
 
