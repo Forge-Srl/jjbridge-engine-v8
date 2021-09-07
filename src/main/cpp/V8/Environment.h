@@ -44,8 +44,7 @@ public:
     const jobject jsTypeUndefined;
     const jobject jsTypeNull;
     const jobject jsTypeBoolean;
-    const jobject jsTypeInteger;
-    const jobject jsTypeFloat;
+    const jobject jsTypeNumber;
     const jobject jsTypeString;
     const jobject jsTypeExternal;
     const jobject jsTypeObject;

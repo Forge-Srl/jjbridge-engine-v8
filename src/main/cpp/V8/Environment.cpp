@@ -44,8 +44,7 @@ Environment::Environment(JavaVM* jvm, JNIEnv* env)
 , INIT_ENUM_VALUE(jsTypeUndefined, jsTypeClass, "Undefined", "Ljjbridge/api/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeNull, jsTypeClass, "Null", "Ljjbridge/api/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeBoolean, jsTypeClass, "Boolean", "Ljjbridge/api/value/JSType;")
-, INIT_ENUM_VALUE(jsTypeInteger, jsTypeClass, "Integer", "Ljjbridge/api/value/JSType;")
-, INIT_ENUM_VALUE(jsTypeFloat, jsTypeClass, "Float", "Ljjbridge/api/value/JSType;")
+, INIT_ENUM_VALUE(jsTypeNumber, jsTypeClass, "Number", "Ljjbridge/api/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeString, jsTypeClass, "String", "Ljjbridge/api/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeExternal, jsTypeClass, "External", "Ljjbridge/api/value/JSType;")
 , INIT_ENUM_VALUE(jsTypeObject, jsTypeClass, "Object", "Ljjbridge/api/value/JSType;")
@@ -86,8 +85,7 @@ void Environment::Release(JNIEnv* env, Environment* environment)
 	env->DeleteGlobalRef(environment->jsTypeUndefined);
 	env->DeleteGlobalRef(environment->jsTypeNull);
 	env->DeleteGlobalRef(environment->jsTypeBoolean);
-	env->DeleteGlobalRef(environment->jsTypeInteger);
-	env->DeleteGlobalRef(environment->jsTypeFloat);
+	env->DeleteGlobalRef(environment->jsTypeNumber);
 	env->DeleteGlobalRef(environment->jsTypeString);
 	env->DeleteGlobalRef(environment->jsTypeExternal);
 	env->DeleteGlobalRef(environment->jsTypeObject);
@@ -103,12 +101,7 @@ auto Environment::getResultType(JNIEnv* env, v8::Local<v8::Context> context, con
 	if (result->IsUndefined()) { return jsTypeUndefined; }
 	if (result->IsNull()) { return jsTypeNull; }
 	if (result->IsBoolean()) { return jsTypeBoolean; }
-	if (result->IsNumber())
-	{
-	    if (fmod(result->NumberValue(context).ToChecked(), 1.0) == 0.0) { return jsTypeInteger; }
-
-	    return jsTypeFloat;
-	}
+	if (result->IsNumber()) { return jsTypeNumber; }
 	if (result->IsString()) { return jsTypeString; }
 	if (result->IsExternal()) { return jsTypeExternal; }
 	if (result->IsObject())

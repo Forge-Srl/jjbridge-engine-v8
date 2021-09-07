@@ -59,16 +59,6 @@ class AccessorsFactory
         return value -> this.v8.setBooleanValue(this.runtimeHandle, handle, value);
     }
 
-    protected ValueGetter<Long> longGetter(long handle)
-    {
-        return () -> this.v8.getLongValue(this.runtimeHandle, handle);
-    }
-
-    protected ValueSetter<Long> longSetter(long handle)
-    {
-        return value -> this.v8.setLongValue(this.runtimeHandle, handle, value);
-    }
-
     protected ValueGetter<Double> doubleGetter(long handle)
     {
         return () -> this.v8.getDoubleValue(this.runtimeHandle, handle);

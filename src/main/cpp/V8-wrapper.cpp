@@ -177,31 +177,6 @@ extern "C"
     }
 
     JNIEXPORT auto JNICALL
-    JPF(getLongValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle) -> jlong
-    {
-        Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
-        newLocalContext(runtime, context)
-        return (Handle::FromLong(referenceHandle)->GetLocal<v8::Value>()->ToInteger(context)).ToLocalChecked()->Value();
-    }
-
-    JNIEXPORT void JNICALL
-    JPF(setLongValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle, jlong value)
-    {
-        Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
-        newLocalContext(runtime, context)
-        // Only v8::Number has a constructor taking a 64 bit number!
-        Handle::FromLong(referenceHandle)->Set(v8::Number::New(runtime->isolate, value));
-    }
-
-    JNIEXPORT void JNICALL
-    JPF(initLongValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle)
-    {
-        Runtime* runtime = Runtime::safeCast(env, runtimeHandle);
-        newLocalContext(runtime, context)
-        Handle::FromLong(referenceHandle)->Set(v8::Number::New(runtime->isolate, 0));
-    }
-
-    JNIEXPORT auto JNICALL
     JPF(getDoubleValue)(JNIEnv* env, jobject thiz, jlong runtimeHandle, jlong referenceHandle) -> jdouble
     {
         Runtime* runtime = Runtime::safeCast(env, runtimeHandle);

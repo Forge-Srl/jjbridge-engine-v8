@@ -73,8 +73,8 @@ public class RuntimeBenchmarkTest
                 callbackResult[1] = arguments[0].getNominalType() == JSType.Null;
                 callbackResult[2] = ((JSString) runtime.resolveReference(arguments[1])).getValue().equals(stringToCheck);
 
-                JSReference reference = runtime.newReference(JSType.Integer);
-                runtime.<JSInteger>resolveReference(reference).setValue(numberToCheck);
+                JSReference reference = runtime.newReference(JSType.Number);
+                runtime.<JSNumber>resolveReference(reference).setLongValue(numberToCheck);
                 return reference;
             });
         }
@@ -83,7 +83,7 @@ public class RuntimeBenchmarkTest
         assertTrue(callbackResult[0]);
         assertTrue(callbackResult[1]);
         assertTrue(callbackResult[2]);
-        assertEquals(numberToCheck, runtime.<JSInteger>resolveReference(functionResult).getValue());
+        assertEquals(numberToCheck, runtime.<JSNumber>resolveReference(functionResult).getLongValue());
 
         function.setFunction(arguments -> {
             JSReference reference = runtime.newReference(JSType.Undefined);

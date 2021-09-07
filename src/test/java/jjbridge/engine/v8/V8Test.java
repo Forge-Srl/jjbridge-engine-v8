@@ -42,9 +42,9 @@ public class V8Test {
     @Test
     public void newReferencesAreTracked() {
         for (int i = 0; i < 100; i++) {
-            ReferenceTypeGetter referenceTypeGetter = handle -> JSType.Integer;
+            ReferenceTypeGetter referenceTypeGetter = handle -> JSType.Number;
             EqualityChecker equalityChecker = (a,b) -> a == b;
-            Reference ref = v8.newValue(runtime.getNativeHandle(), JSType.Integer, referenceTypeGetter, equalityChecker);
+            Reference ref = v8.newValue(runtime.getNativeHandle(), JSType.Number, referenceTypeGetter, equalityChecker);
             verify(referenceMonitor).track(eq(ref), any());
         }
     }

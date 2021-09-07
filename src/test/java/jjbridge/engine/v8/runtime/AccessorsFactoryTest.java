@@ -63,22 +63,6 @@ public class AccessorsFactoryTest {
     }
 
     @Test
-    public void integerGetter() {
-        long value = 150;
-        ValueGetter<Long> getter = factory.longGetter(referenceHandle);
-        when(v8.getLongValue(runtimeHandle, referenceHandle)).thenReturn(value);
-        assertEquals(value, (long) getter.getValue());
-    }
-
-    @Test
-    public void integerSetter() {
-        long value = 150;
-        ValueSetter<Long> setter = factory.longSetter(referenceHandle);
-        setter.setValue(value);
-        verify(v8).setLongValue(runtimeHandle, referenceHandle, value);
-    }
-
-    @Test
     public void doubleGetter() {
         double value = 1.061651654654;
         ValueGetter<Double> getter = factory.doubleGetter(referenceHandle);

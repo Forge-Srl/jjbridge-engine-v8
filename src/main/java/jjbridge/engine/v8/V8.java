@@ -192,36 +192,6 @@ public class V8
         }
     }
 
-    private native long getLongValue_internal(long runtimeHandle, long valueHandle);
-
-    public long getLongValue(long runtimeHandle, long valueHandle)
-    {
-        synchronized (lock)
-        {
-            return getLongValue_internal(runtimeHandle, valueHandle);
-        }
-    }
-
-    private native void setLongValue_internal(long runtimeHandle, long valueHandle, long value);
-
-    public void setLongValue(long runtimeHandle, long valueHandle, long value)
-    {
-        synchronized (lock)
-        {
-            setLongValue_internal(runtimeHandle, valueHandle, value);
-        }
-    }
-
-    private native void initLongValue_internal(long runtimeHandle, long valueHandle);
-
-    public void initLongValue(long runtimeHandle, long valueHandle)
-    {
-        synchronized (lock)
-        {
-            initLongValue_internal(runtimeHandle, valueHandle);
-        }
-    }
-
     private native double getDoubleValue_internal(long runtimeHandle, long valueHandle);
 
     public double getDoubleValue(long runtimeHandle, long valueHandle)
